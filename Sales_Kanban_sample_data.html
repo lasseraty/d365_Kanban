@@ -1,0 +1,1338 @@
+<!--
+  =============================================================
+  D365 Sales Kanban Board — DEMO VERSION (sample data)
+  =============================================================
+  A vibe coding example by Lasse Räty.
+  Free for anyone to use, share and modify.
+
+  I take no responsibility for anything this code does,
+  and neither does Claude (the AI that helped build it).
+
+  This is the DEMO version with invented sample data baked in.
+  For the live version that queries D365 Web API, use kanban_v5.html.
+
+  How it works:
+  - Single flat HTML file, no build step needed
+  - In the production version this queries D365 Web API
+    (/api/data/v9.2) using the current user's browser session
+  - Uses only standard out-of-the-box D365 fields
+  =============================================================
+-->
+<html><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>D365 Sales Kanban – Demo</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: #f3f2f1;
+  color: #201f1e;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+}
+
+/* ── HEADER ── */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+  height: 48px;
+  background: #fff;
+  border-bottom: 1px solid #e1dfdd;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-left { display: flex; align-items: center; gap: 12px; }
+.header-logo { height: 22px; width: auto; filter: invert(1); }
+.header-divider { width: 1px; height: 20px; background: #e1dfdd; }
+.header-title { font-size: 14px; font-weight: 600; color: #201f1e; }
+.header-right { display: flex; align-items: center; gap: 8px; }
+
+.refresh-btn {
+  background: none; border: 1px solid #e1dfdd; color: #605e5c;
+  width: 30px; height: 30px; border-radius: 2px; cursor: pointer;
+  font-size: 15px; display: flex; align-items: center; justify-content: center;
+  transition: background 0.1s;
+}
+.refresh-btn:hover { background: #f3f2f1; border-color: #c8c6c4; }
+
+/* ── SEARCH ── */
+.search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.search-icon {
+  position: absolute;
+  left: 8px;
+  font-size: 12px;
+  pointer-events: none;
+  line-height: 1;
+}
+.search-input {
+  width: 220px;
+  padding: 5px 28px 5px 28px;
+  border: 1px solid #c8c6c4;
+  border-radius: 2px;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 12px;
+  color: #201f1e;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.1s, box-shadow 0.1s;
+}
+.search-input:focus {
+  border-color: #0078d4;
+  box-shadow: 0 0 0 1px #0078d4;
+}
+.search-input::placeholder { color: #a19f9d; }
+.search-clear {
+  position: absolute;
+  right: 6px;
+  background: none;
+  border: none;
+  color: #a19f9d;
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1;
+  padding: 2px;
+  display: none;
+}
+.search-clear:hover { color: #201f1e; }
+.search-clear.visible { display: block; }
+.sort-btn {
+  padding: 3px 8px;
+  border: 1px solid #c8c6c4;
+  background: #fff;
+  color: #201f1e;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 11px;
+  border-radius: 2px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.1s;
+}
+.sort-btn:hover { background: #f3f2f1; }
+.sort-btn.active { background: #0078d4; border-color: #0078d4; color: #fff; font-weight: 600; }
+
+/* ── TOOLBAR ── */
+.toolbar {
+  background: #fff;
+  border-bottom: 1px solid #e1dfdd;
+  flex-shrink: 0;
+}
+
+.filter-row {
+  padding: 6px 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  min-height: 38px;
+  border-bottom: 1px solid #f3f2f1;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.filter-row::-webkit-scrollbar { display: none; }
+.filter-row:last-child { border-bottom: none; }
+
+.filter-label { font-size: 11px; color: #a19f9d; margin-right: 2px; white-space: nowrap; }
+
+.filter-btn {
+  padding: 3px 9px;
+  border: 1px solid #c8c6c4;
+  background: #fff;
+  color: #201f1e;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 12px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background 0.1s;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.filter-btn:hover { background: #f3f2f1; border-color: #a19f9d; }
+.filter-btn.active { background: #0078d4; border-color: #0078d4; color: #fff; font-weight: 600; }
+.filter-count { font-weight: 400; opacity: 0.75; font-size: 11px; }
+
+/* Smart filter buttons */
+.sf-btn {
+  padding: 3px 9px;
+  border: 1px solid #c8c6c4;
+  background: #fff;
+  color: #201f1e;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.1s;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.sf-btn:hover { background: #f3f2f1; border-color: #a19f9d; }
+.sf-btn.active { font-weight: 600; }
+
+.sf-btn.sf-hot    { border-color: #d13438; color: #d13438; }
+.sf-btn.sf-hot.active    { background: #d13438; color: #fff; }
+.sf-btn.sf-large  { border-color: #0078d4; color: #0078d4; }
+.sf-btn.sf-large.active  { background: #0078d4; color: #fff; }
+.sf-btn.sf-soon   { border-color: #ca5010; color: #ca5010; }
+.sf-btn.sf-soon.active   { background: #ca5010; color: #fff; }
+.sf-btn.sf-clean  { border-color: #e8c200; color: #7a6400; }
+.sf-btn.sf-clean.active  { background: #f5d800; color: #3a2e00; border-color: #d4bc00; font-weight: 700; }
+
+.sf-count { opacity: 0.75; font-size: 11px; font-weight: 400; }
+
+/* ── SOURCE DROPDOWN ── */
+.source-wrap {
+  position: relative;
+  display: inline-block;
+}
+.source-btn {
+  padding: 3px 9px;
+  border: 1px solid #c8c6c4;
+  background: #fff;
+  color: #201f1e;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.1s;
+}
+.source-btn:hover { background: #f3f2f1; border-color: #a19f9d; }
+.source-btn.active { background: #6b2fa0; border-color: #6b2fa0; color: #fff; font-weight: 600; }
+
+.source-dropdown {
+  display: none;
+  position: fixed;
+  min-width: 200px;
+  background: #fff;
+  border: 1px solid #c8c6c4;
+  border-radius: 2px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  z-index: 9999;
+  padding: 6px 0 4px;
+}
+.source-dropdown.open { display: block; }
+
+.source-search-wrap {
+  padding: 4px 10px 6px;
+  border-bottom: 1px solid #f3f2f1;
+}
+.source-search {
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px solid #c8c6c4;
+  border-radius: 2px;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 12px;
+  outline: none;
+}
+.source-search:focus { border-color: #0078d4; }
+
+.source-select-all {
+  padding: 5px 10px;
+  font-size: 12px;
+  color: #0078d4;
+  cursor: pointer;
+  border-bottom: 1px solid #f3f2f1;
+  margin-bottom: 2px;
+}
+.source-select-all:hover { background: #f3f2f1; }
+
+.source-options-list {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.source-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  font-size: 12px;
+  color: #201f1e;
+  cursor: pointer;
+}
+.source-option:hover { background: #f3f2f1; }
+.source-option input[type=checkbox] { cursor: pointer; accent-color: #6b2fa0; }
+.source-option.hidden { display: none; }
+
+/* ── LOADING / ERROR ── */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 14px;
+  color: #605e5c;
+}
+.spinner {
+  width: 32px; height: 32px;
+  border: 3px solid #e1dfdd;
+  border-top-color: #0078d4;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.error-box {
+  margin: 24px;
+  padding: 16px 20px;
+  background: #fde7e9;
+  border: 1px solid #f1707b;
+  border-radius: 2px;
+  color: #a4262c;
+  font-size: 12px;
+  line-height: 1.6;
+  display: none;
+}
+.error-box strong { display: block; margin-bottom: 4px; font-size: 13px; }
+
+/* ── BOARD ── */
+.board {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  padding: 16px;
+  align-items: stretch;  /* columns same height */
+  min-width: 0;
+  min-height: 0;
+}
+
+/* ── COLUMN ── */
+.column {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #e1dfdd;
+  border-radius: 2px;
+}
+
+.col-cards {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;                    /* fill remaining column height */
+  overflow-y: visible;        /* don't clip tooltips */
+  overflow-x: visible;
+}
+.col-header {
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid #e1dfdd;
+  background: #faf9f8;
+}
+.col-name { font-size: 13px; font-weight: 600; color: #201f1e; margin-bottom: 3px; }
+.col-stats { font-size: 11px; color: #605e5c; }
+.col-stats .hi { color: #0078d4; font-weight: 600; }
+
+.column.won-col .col-header { background: #f0f9f0; }
+.column.won-col .col-name { color: #107c10; }
+.column.won-col .col-stats .hi { color: #107c10; }
+
+/* Leads column */
+.column.lead-col .col-header { background: #f5f0fb; }
+.column.lead-col .col-name { color: #6b2fa0; }
+.column.lead-col .col-stats .hi { color: #6b2fa0; }
+.card.lead::before { background: #8764b8; }
+
+/* ── TOOLTIP ── */
+.card { position: relative; }
+.card-tooltip {
+  display: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: #f8f8f6;
+  color: #201f1e;
+  border: 1px solid #e1dfdd;
+  font-size: 11px;
+  line-height: 1.5;
+  padding: 7px 10px;
+  border-radius: 3px;
+  z-index: 200;
+  pointer-events: none;
+  word-break: break-word;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+/* Arrow up — tooltip below card */
+.card-tooltip.below {
+  top: calc(100% + 6px);
+  bottom: auto;
+}
+.card-tooltip.below::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 16px;
+  border: 5px solid transparent;
+  border-bottom-color: #e1dfdd;
+}
+.card-tooltip.below::after {
+  content: '';
+  position: absolute;
+  bottom: calc(100% - 1px);
+  left: 17px;
+  border: 4px solid transparent;
+  border-bottom-color: #f8f8f6;
+}
+/* Arrow down — tooltip above card */
+.card-tooltip.above {
+  bottom: calc(100% + 6px);
+  top: auto;
+}
+.card-tooltip.above::before {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 16px;
+  border: 5px solid transparent;
+  border-top-color: #e1dfdd;
+}
+.card-tooltip.above::after {
+  content: '';
+  position: absolute;
+  top: calc(100% - 1px);
+  left: 17px;
+  border: 4px solid transparent;
+  border-top-color: #f8f8f6;
+}
+.card:hover .card-tooltip { display: block; }
+
+/* ── CARDS ── */
+
+/* ── CARD ── */
+.card {
+  border: 1px solid #e1dfdd;
+  border-radius: 2px;
+  padding: 9px 10px 8px 14px;
+  background: #fff;
+  cursor: pointer;
+  position: relative;
+  transition: box-shadow 0.1s, border-color 0.1s;
+  min-width: 0;
+}
+.card:hover { box-shadow: 0 2px 6px rgba(0,0,0,0.1); border-color: #c8c6c4; }
+
+.card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  border-radius: 2px 0 0 2px;
+}
+.card.hot::before  { background: #d13438; }
+.card.warm::before { background: #107c10; }
+.card.cold::before { background: #0078d4; }
+.card.won::before  { background: #107c10; }
+
+/* Highlight ring when smart filter is active */
+.card.sf-highlight { box-shadow: 0 0 0 2px #0078d4; border-color: #0078d4; }
+
+/* ── YELLOW CARD BADGE (top-right) ── */
+.yellow-card-badge {
+  position: absolute;
+  top: 5px;
+  right: 28px; /* leave room for link icon */
+  line-height: 1;
+  display: flex;
+  align-items: center;
+}
+
+/* link icon */
+.card-link {
+  position: absolute;
+  top: 7px; right: 8px;
+  color: #c8c6c4;
+  text-decoration: none;
+  line-height: 1;
+  transition: color 0.1s;
+  flex-shrink: 0;
+}
+.card-link:hover { color: #0078d4; }
+.card-link svg { display: block; }
+
+/* Topic: leave room for link + possible yellow card */
+.card-topic {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0078d4;
+  margin-bottom: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-right: 38px; /* room for link icon + yellow card */
+  min-width: 0;
+}
+.card-customer {
+  font-size: 11px;
+  color: #605e5c;
+  margin-bottom: 7px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-top: 6px;
+  border-top: 1px solid #f3f2f1;
+  gap: 4px;
+  min-width: 0;
+}
+.card-value { font-size: 12px; font-weight: 600; color: #201f1e; flex-shrink: 0; }
+.card-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+.prob-badge {
+  font-size: 10px; font-weight: 700;
+  padding: 1px 5px; border-radius: 10px;
+  flex-shrink: 0;
+}
+.card.hot  .prob-badge { background: #fde7e9; color: #d13438; }
+.card.warm .prob-badge { background: #dff6dd; color: #107c10; }
+.card.cold .prob-badge { background: #deecf9; color: #0078d4; }
+
+.date-badge {
+  font-size: 10px; font-weight: 600;
+  padding: 1px 6px; border-radius: 10px;
+  background: #dff6dd; color: #107c10;
+}
+.card-owner { font-size: 10px; color: #a19f9d; }
+.card-days { font-size: 10px; color: #a19f9d; }
+.card-days.soon    { color: #ca5010; font-weight: 600; }
+.card-days.overdue { color: #d13438; font-weight: 600; }
+.overdue-emoji { font-size: 12px; line-height: 1; }
+
+/* ── DATE CHIPS (bottom-right of card) ── */
+.card-date-chips {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.date-chip {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  color: #605e5c;
+  white-space: nowrap;
+}
+.date-chip.overdue { color: #d13438; font-weight: 600; }
+.date-chip svg { flex-shrink: 0; }
+
+.empty-col { padding: 20px; text-align: center; color: #a19f9d; font-size: 12px; }
+</style>
+<meta></head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <img class="header-logo" src="https://bofor.com/wp-content/uploads/2022/01/BOFOR_logo_white-011.png" onerror="this.style.display='none';document.getElementById('logoFallback').style.display='block';" alt="Bofor">
+    <strong id="logoFallback" style="display:none;font-size:15px;letter-spacing:1px;">BOFOR</strong>
+    <div class="header-divider"></div>
+    <span class="header-title">Sales Kanban <span style="font-weight:400;color:#a19f9d;font-size:12px;">(Demo data)</span></span>
+  </div>
+  <div class="header-right">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="searchInput" type="text" placeholder="Search topic or customer…" oninput="onSearch(this.value)">
+      <button class="search-clear" id="searchClear" onclick="clearSearch()" title="Clear">✕</button>
+    </div>
+    <button class="refresh-btn" id="refreshBtn" title="Refresh">↻</button>
+  </div>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="filter-row">
+    <span class="filter-label">View:</span>
+    <button class="filter-btn" data-filter="all" onclick="setOwnerFilter('all',this)">All Users</button>
+    <button class="filter-btn" id="meBtn" onclick="setOwnerFilter(ME_ID,this)">Me</button>
+    <span id="ownerFilters" style="display:inline-flex;align-items:center;gap:6px;"></span>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">Filter:</span>
+    <button class="sf-btn sf-hot" id="sf-hot" onclick="toggleSmartFilter('hot',this)">🔥 Hot <span class="sf-count" id="sf-hot-count"></span></button>
+    <button class="sf-btn sf-large" id="sf-large" onclick="toggleSmartFilter('large',this)">💰 Large <span class="sf-count" id="sf-large-count"></span></button>
+    <button class="sf-btn sf-soon" id="sf-soon" onclick="toggleSmartFilter('soon',this)">⏰ Closing soon <span class="sf-count" id="sf-soon-count"></span></button>
+    <button class="sf-btn sf-clean" id="sf-clean" onclick="toggleSmartFilter('clean',this)"><svg width="10" height="13" viewBox="0 0 12 16" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="0.6" y="0.6" width="10.8" height="14.8" rx="1.4" fill="#f5d800" stroke="#c9aa00" stroke-width="1.2"/></svg> Needs cleanup <span class="sf-count" id="sf-clean-count"></span></button>
+    <div class="source-wrap" id="sourceWrap">
+      <button class="source-btn" id="sourceBtn" onclick="toggleSourceDropdown(event)">🏷️ Source <span class="sf-count" id="source-count"></span></button>
+      <div class="source-dropdown" id="sourceDropdown">
+        <div class="source-search-wrap">
+          <input class="source-search" id="sourceSearch" type="text" placeholder="Search…" oninput="filterSourceOptions(this.value)">
+        </div>
+        <div class="source-select-all" onclick="toggleAllSources()">Select all / Clear</div>
+        <div class="source-options-list"><div id="sourceOptions"></div></div>
+      </div>
+    </div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:4px;">
+      <span class="filter-label">Sort:</span>
+      <button class="sort-btn active" data-sort="revenue" onclick="setSort('revenue',this)">💶 €</button>
+      <button class="sort-btn" data-sort="date" onclick="setSort('date',this)">📅 Date</button>
+      <button class="sort-btn" data-sort="prob" onclick="setSort('prob',this)">% Prob</button>
+    </div>
+  </div>
+</div>
+
+<!-- ERROR -->
+<div class="error-box" id="errorBox">
+  <strong>Failed to load data from CRM</strong>
+  <span id="errorMsg"></span>
+</div>
+
+<!-- LOADING -->
+<div class="loading" id="loadingState">
+  <div class="spinner"></div>
+  <span>Loading opportunities from CRM…</span>
+</div>
+
+<!-- BOARD -->
+<div class="board" id="board" style="display:none;"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════
+const TODAY = new Date();
+TODAY.setHours(0,0,0,0);
+
+const STAGES = [
+  { key: 'develop', label: 'Develop' },
+  { key: 'propose', label: 'Propose' },
+  { key: 'close',   label: 'Close'   },
+];
+
+function getStage(stepname) {
+  if (!stepname) return null;
+  const s = stepname.toLowerCase();
+  if (s.includes('develop')) return 'develop';
+  if (s.includes('propose')) return 'propose';
+  if (s.includes('close'))   return 'close';
+  return null;
+}
+
+let ME_ID   = 'juhani-id';
+let ME_NAME = 'Juhani Jukola';
+let ORG_URL = '';
+
+let activeOwner  = 'all';
+let activeSort   = 'revenue';
+let activeSmartFilters = new Set();
+let searchQuery  = '';
+let activeSources = new Set();
+
+// ═══════════════════════════════════════════════════════
+// MOCK DATA
+// ═══════════════════════════════════════════════════════
+const TODAY_STR = (() => {
+  const d = new Date(); return d.toISOString().split('T')[0];
+})();
+function daysFromNow(n) {
+  const d = new Date(); d.setDate(d.getDate() + n); return d.toISOString().split('T')[0];
+}
+
+const OWNERS = [
+  { id: 'juhani-id', name: 'Juhani Jukola' },
+  { id: 'tuomas-id', name: 'Tuomas Jukola' },
+  { id: 'aapo-id',   name: 'Aapo Jukola' },
+  { id: 'simeoni-id',name: 'Simeoni Jukola' },
+  { id: 'timo-id',   name: 'Timo Jukola' },
+  { id: 'lauri-id',  name: 'Lauri Jukola' },
+  { id: 'eero-id',   name: 'Eero Jukola' },
+];
+
+function owner(name) {
+  return OWNERS.find(o => o.name.startsWith(name));
+}
+
+const MOCK_OPEN = [
+  // ── DEVELOP ~6M€ ──
+  { id:'d1',  topic:'ERP-uudistus ja toiminnanohjaus',        customer:'Möttölän Konepaja Oy',          ownerId:'juhani-id', ownerName:'Juhani Jukola', revenue:800000, prob:25, stage:'develop', closeDate:daysFromNow(90),  followupDate:daysFromNow(5),  nextAction:'Tarvekartoitus sovittu, odotetaan budjettivahvistusta', source:'Outbound' },
+  { id:'d2',  topic:'D365 Customer Service käyttöönotto',     customer:'Hörppäsen Logistiikka Oy',      ownerId:'tuomas-id', ownerName:'Tuomas Jukola',  revenue:650000, prob:20, stage:'develop', closeDate:daysFromNow(120), followupDate:daysFromNow(12), nextAction:'Workshop Q2, päätöksentekijä tunnistettu', source:'Inbound' },
+  { id:'d3',  topic:'Pilvimigraatio ja infrastruktuuri',      customer:'Ruotsalaisen Rakenne Oy',       ownerId:'aapo-id',   ownerName:'Aapo Jukola',  revenue:550000, prob:15, stage:'develop', closeDate:daysFromNow(-10), followupDate:daysFromNow(-5), nextAction:'Seuranta: ei vastattu', source:'Partner' },
+  { id:'d4',  topic:'Salesforce-korvaus D365:llä',            customer:'Töpöhäntä Trading Oy',          ownerId:'simeoni-id', ownerName:'Simeoni Jukola', revenue:480000, prob:30, stage:'develop', closeDate:daysFromNow(60),  followupDate:daysFromNow(8),  nextAction:'Demo sovittu 2vk päähän', source:'Outbound' },
+  { id:'d5',  topic:'Kenttähuolto ja mobiilijärjestelmä',     customer:'Leppäsen Lämpö ja Ilma Oy',     ownerId:'timo-id',    ownerName:'Timo Jukola',  revenue:420000, prob:20, stage:'develop', closeDate:daysFromNow(75),  followupDate:daysFromNow(3),  nextAction:'Vaatimuksenmäärittely käynnissä', source:'Referral' },
+  { id:'d6',  topic:'Asiakkuudenhallinta uusintaprojekti',    customer:'Hiihtolan Huolto Oy',           ownerId:'lauri-id',  ownerName:'Lauri Jukola',   revenue:390000, prob:25, stage:'develop', closeDate:daysFromNow(50),  followupDate:daysFromNow(-3), nextAction:'Tarjous odottaa', source:'Inbound' },
+  { id:'d7',  topic:'Power Platform automaatioratkaisu',      customer:'Töpselin Tukku Oy',             ownerId:'juhani-id', ownerName:'Juhani Jukola', revenue:350000, prob:20, stage:'develop', closeDate:daysFromNow(95),  followupDate:daysFromNow(14), nextAction:'Proof of concept sovittu', source:'Outbound' },
+  { id:'d8',  topic:'Talousraportointi ja BI-ratkaisu',       customer:'Koposen Keittiöt Oy',           ownerId:'tuomas-id', ownerName:'Tuomas Jukola',  revenue:320000, prob:15, stage:'develop', closeDate:daysFromNow(110), followupDate:daysFromNow(20), nextAction:'Alustava palaveri sovittu', source:'Event' },
+  { id:'d9',  topic:'Varastonhallintajärjestelmä',            customer:'Räiskäsen Rakennustarvike Oy',  ownerId:'aapo-id',   ownerName:'Aapo Jukola',  revenue:290000, prob:20, stage:'develop', closeDate:daysFromNow(80),  followupDate:daysFromNow(6),  nextAction:'Kilpailija-analyysi kesken', source:'Outbound' },
+  { id:'d10', topic:'HR-portaali ja henkilöstöhallinto',      customer:'Höpöttisen Henkilöstöpalvelut', ownerId:'simeoni-id', ownerName:'Simeoni Jukola', revenue:270000, prob:25, stage:'develop', closeDate:daysFromNow(70),  followupDate:daysFromNow(10), nextAction:'Esittely johdolle sovittu', source:'Inbound' },
+  { id:'d11', topic:'Projektinhallinta ja resursointi',       customer:'Möhläyksen Muotoilu Oy',        ownerId:'timo-id',    ownerName:'Timo Jukola',  revenue:250000, prob:15, stage:'develop', closeDate:daysFromNow(-20), followupDate:daysFromNow(-8), nextAction:'Ei vastattu kahteen viikkoon', source:'Outbound' },
+  { id:'d12', topic:'SharePoint-intranet uudistus',           customer:'Tupakan Turvallisuustekniikka', ownerId:'lauri-id',  ownerName:'Lauri Jukola',   revenue:230000, prob:20, stage:'develop', closeDate:daysFromNow(85),  followupDate:daysFromNow(4),  nextAction:'Workshopit Q3', source:'Referral' },
+
+  // ── PROPOSE ~3M€ ──
+  { id:'p1',  topic:'D365 Finance & Operations käyttöönotto', customer:'Kulmalan Komponentit Oy',       ownerId:'juhani-id', ownerName:'Juhani Jukola', revenue:600000, prob:40, stage:'propose', closeDate:daysFromNow(35),  followupDate:daysFromNow(2),  nextAction:'Tarjous toimitettu, odotetaan kommentteja', source:'Inbound' },
+  { id:'p2',  topic:'Contact Center -alustauudistus',         customer:'Röyhkeän Ravintolat Oy',        ownerId:'tuomas-id', ownerName:'Tuomas Jukola',  revenue:480000, prob:55, stage:'propose', closeDate:daysFromNow(18),  followupDate:daysFromNow(1),  nextAction:'Hintaneuvottelu käynnissä', source:'Partner' },
+  { id:'p3',  topic:'Kenttäpalvelu ja huoltosopimus',         customer:'Länsimaisen Lämpö Oy',          ownerId:'aapo-id',   ownerName:'Aapo Jukola',  revenue:420000, prob:50, stage:'propose', closeDate:daysFromNow(25),  followupDate:daysFromNow(-2), nextAction:'Sopimustekniset asiat auki', source:'Outbound' },
+  { id:'p4',  topic:'Asiakasportaali ja self-service',        customer:'Nättinäkin Verkkokauppa Oy',    ownerId:'simeoni-id', ownerName:'Simeoni Jukola', revenue:380000, prob:45, stage:'propose', closeDate:daysFromNow(40),  followupDate:daysFromNow(5),  nextAction:'Tekninen review ensi viikolla', source:'Inbound' },
+  { id:'p5',  topic:'Teams-integraatio ja viestintäratkaisu', customer:'Sopusoinnun Softapalvelut Oy',  ownerId:'timo-id',    ownerName:'Timo Jukola',  revenue:290000, prob:60, stage:'propose', closeDate:daysFromNow(12),  followupDate:daysFromNow(0),  nextAction:'Päätös ensi viikolla', source:'Referral' },
+  { id:'p6',  topic:'Toiminnanohjaus teollisuudelle',         customer:'Rämpälän Rakentajat Oy',        ownerId:'lauri-id',  ownerName:'Lauri Jukola',   revenue:260000, prob:35, stage:'propose', closeDate:daysFromNow(-5),  followupDate:daysFromNow(-1), nextAction:'Tarjous vanhentumassa', source:'Event' },
+  { id:'p7',  topic:'BI ja analytiikkaratkaisu',              customer:'Tylsistyneen Tilitoimisto Oy',  ownerId:'juhani-id', ownerName:'Juhani Jukola', revenue:200000, prob:50, stage:'propose', closeDate:daysFromNow(28),  followupDate:daysFromNow(7),  nextAction:'Referenssikäynti sovittu', source:'Outbound' },
+  { id:'p8',  topic:'Mobiilikehitys ja kenttätyö',            customer:'Köpöttisen Kuljetus Oy',        ownerId:'tuomas-id', ownerName:'Tuomas Jukola',  revenue:180000, prob:65, stage:'propose', closeDate:daysFromNow(10),  followupDate:daysFromNow(0),  nextAction:'Lähes maalissa, sopimus luonnoksella', source:'Inbound' },
+
+  // ── CLOSE ~2M€ ──
+  { id:'c1',  topic:'D365 Sales Premium lisenssiuudistus',    customer:'Haaviston Hitsauspalvelut Oy',  ownerId:'juhani-id', ownerName:'Juhani Jukola', revenue:550000, prob:80, stage:'close', closeDate:daysFromNow(7),   followupDate:daysFromNow(1),  nextAction:'Sopimus allekirjoitukseen ensi viikolla', source:'Inbound' },
+  { id:'c2',  topic:'Azure-pilvipalvelut 3v sopimus',         customer:'Kukkasen Konttoripalvelut Oy',  ownerId:'simeoni-id', ownerName:'Simeoni Jukola', revenue:420000, prob:85, stage:'close', closeDate:daysFromNow(5),   followupDate:daysFromNow(0),  nextAction:'Juridiikka tarkistaa sopimuksen', source:'Partner' },
+  { id:'c3',  topic:'Power BI käyttöönotto koko organisaatio',customer:'Möttölän Meijerit Oy',          ownerId:'aapo-id',   ownerName:'Aapo Jukola',  revenue:380000, prob:75, stage:'close', closeDate:daysFromNow(14),  followupDate:daysFromNow(3),  nextAction:'Budjettivahvistus saatu, sopimus luonnos ok', source:'Outbound' },
+  { id:'c4',  topic:'Customer Insights & Marketing automaatio','customer':'Lörpöttelemön Lihastuote Oy', ownerId:'timo-id',   ownerName:'Timo Jukola',  revenue:320000, prob:90, stage:'close', closeDate:daysFromNow(3),   followupDate:daysFromNow(-1), nextAction:'Käytännössä myyty, sopimus viimeistelyssä', source:'Inbound' },
+  { id:'c5',  topic:'Copilot-lisenssit ja käyttöönotto',      customer:'Röpelöisen Rakennusliike Oy',   ownerId:'lauri-id',  ownerName:'Lauri Jukola',   revenue:180000, prob:80, stage:'close', closeDate:daysFromNow(10),  followupDate:daysFromNow(2),  nextAction:'Hankintapäätös tehty, odotellaan tilausvahvistusta', source:'Referral' },
+  { id:'c6',  topic:'Tietoturva-auditointi ja GDPR-ratkaisu', customer:'Limpun Lääketukkuri Oy',        ownerId:'tuomas-id', ownerName:'Tuomas Jukola',  revenue:150000, prob:75, stage:'close', closeDate:daysFromNow(-3),  followupDate:daysFromNow(-2), nextAction:'Päätös viivästynyt, muistutus lähetetty', source:'Event' },
+];
+
+const MOCK_WON = [
+  { id:'w1',  topic:'SAP-korvaus D365:llä',                   customer:'Törttösen Teräsrakenne Oy',     ownerId:'juhani-id', ownerName:'Juhani Jukola', actualValue:320000, closeDate:daysFromNow(-3)  },
+  { id:'w2',  topic:'Dynamics 365 Field Service',             customer:'Nuppulan Nosturit Oy',          ownerId:'simeoni-id', ownerName:'Simeoni Jukola', actualValue:250000, closeDate:daysFromNow(-5)  },
+  { id:'w3',  topic:'Contact Center pilottiprojekti',         customer:'Kieroilun Kiinteistöt Oy',      ownerId:'tuomas-id', ownerName:'Tuomas Jukola',  actualValue:180000, closeDate:daysFromNow(-8)  },
+  { id:'w4',  topic:'Power Platform käyttöönotto',            customer:'Löpöttisen Logistiikkapalvelut',ownerId:'aapo-id',   ownerName:'Aapo Jukola',  actualValue:95000,  closeDate:daysFromNow(-10) },
+  { id:'w5',  topic:'Teams Phone -ratkaisu',                  customer:'Möttölän Konepaja Oy',          ownerId:'eero-id',    ownerName:'Eero Jukola',    actualValue:85000,  closeDate:daysFromNow(-12) },
+  { id:'w6',  topic:'BI-dashboard myyntiorganisaatiolle',     customer:'Hapsasen Huonekalut Oy',        ownerId:'lauri-id',   ownerName:'Lauri Jukola',   actualValue:75000,  closeDate:daysFromNow(-15) },
+  { id:'w7',  topic:'Copilot pilotti ja laajentaminen',       customer:'Räpsäyksen Retkeily Oy',        ownerId:'juhani-id',  ownerName:'Juhani Jukola',  actualValue:65000,  closeDate:daysFromNow(-18) },
+  { id:'w8',  topic:'SharePoint-modernisaatio',               customer:'Töppäsen Toimistotuotteet Oy',  ownerId:'simeoni-id', ownerName:'Simeoni Jukola', actualValue:55000,  closeDate:daysFromNow(-22) },
+  { id:'w9',  topic:'Azure-infrastruktuuri ja migraatio',     customer:'Kolottavan Konttori Oy',        ownerId:'tuomas-id',  ownerName:'Tuomas Jukola',  actualValue:45000,  closeDate:daysFromNow(-25) },
+  { id:'w10', topic:'D365 Customer Service lisämoduulit',     customer:'Nappulan Nakkikioski Oy',       ownerId:'aapo-id',    ownerName:'Aapo Jukola',    actualValue:30000,  closeDate:daysFromNow(-28) },
+];
+
+const MOCK_LEADS = [
+  { id:'l1',  topic:'CRM-selvitys ja tarvekartoitus',         customer:'Höröttelemön Hitsaus Oy',        ownerId:'juhani-id',  ownerName:'Juhani Jukola',  followupDate:daysFromNow(-15), nextAction:'Yhteydenotto puhelimitse', source:'Outbound' },
+  { id:'l2',  topic:'ERP-hankinnan esiselvitys',              customer:'Räpylän Rakennus Oy',            ownerId:'tuomas-id',  ownerName:'Tuomas Jukola',  followupDate:daysFromNow(3),   nextAction:'Sähköposti lähetetty, odotetaan', source:'Inbound' },
+  { id:'l3',  topic:'Teams-lisenssit ja käyttöönotto',        customer:'Töpöttisen Tukkuliike Oy',       ownerId:'aapo-id',    ownerName:'Aapo Jukola',    followupDate:daysFromNow(-5),  nextAction:'Palaveri sovittava uudelleen', source:'Event' },
+  { id:'l4',  topic:'Pilvistrategia ja road map',             customer:'Lörpöttimön Laskentapalvelut',   ownerId:'simeoni-id', ownerName:'Simeoni Jukola', followupDate:daysFromNow(8),   nextAction:'Esittely CTO:lle', source:'Referral' },
+  { id:'l5',  topic:'Tietovarastointi ja analytiikka',        customer:'Möhläyksen Metalliteollisuus',   ownerId:'timo-id',    ownerName:'Timo Jukola',    followupDate:daysFromNow(-20), nextAction:'Budjetti auki ensi vuodelle', source:'Outbound' },
+  { id:'l6',  topic:'Microsoft 365 migraatio',                customer:'Hapsasen Hälytyspalvelut Oy',    ownerId:'lauri-id',   ownerName:'Lauri Jukola',   followupDate:daysFromNow(5),   nextAction:'Alustava palaveri sovittu', source:'Inbound' },
+  { id:'l7',  topic:'Copilot-mahdollisuusselvitys',           customer:'Räiskäsen Rahoituspalvelut Oy',  ownerId:'eero-id',    ownerName:'Eero Jukola',    followupDate:daysFromNow(12),  nextAction:'Demo ensi kuulla', source:'Event' },
+  { id:'l8',  topic:'Huoltosopimus ja tukipalvelut',          customer:'Törttösen Toimialapalvelut Oy',  ownerId:'tuomas-id',  ownerName:'Tuomas Jukola',  followupDate:daysFromNow(-8),  nextAction:'Tarjous pyydettävä', source:'Outbound' },
+  { id:'l9',  topic:'HR-järjestelmäselvitys',                 customer:'Nuppulan Nettimyynti Oy',        ownerId:'aapo-id',    ownerName:'Aapo Jukola',    followupDate:daysFromNow(2),   nextAction:'Palaveri HR-päällikön kanssa', source:'Referral' },
+  { id:'l10', topic:'Power Apps kenttäratkaisu',              customer:'Kopsasen Kotitalouslaitteet Oy', ownerId:'eero-id',    ownerName:'Eero Jukola',    followupDate:daysFromNow(15),  nextAction:'Vaatimusselvitys käynnissä', source:'Partner' },
+];
+
+async function loadData() {
+  // Simulate loading delay for realism
+  await new Promise(r => setTimeout(r, 600));
+  return {
+    openData: MOCK_OPEN,
+    wonData:  MOCK_WON,
+    leadData: MOCK_LEADS,
+  };
+}
+
+// ═══════════════════════════════════════════════════════
+// SVG ICONS
+// ═══════════════════════════════════════════════════════
+// Follow-up icon: calendar with clock
+const FOLLOWUP_ICON = `<svg width="10" height="10" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="1" y="2.5" width="10" height="8.5" rx="1.2" stroke="currentColor" stroke-width="1.2"/>
+  <path d="M1 5h10" stroke="currentColor" stroke-width="1.2"/>
+  <path d="M4 1v3M8 1v3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M6 7v1.5l1 .5" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
+// Start icon: rocket / play arrow
+const START_ICON = `<svg width="10" height="10" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M2 6L5.5 2.5C7 1 9.5 1 10.5 2.5C11.5 4 10.5 6 9 7.5L5.5 10L2 6Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+  <circle cx="7.5" cy="4.5" r="1" fill="currentColor"/>
+  <path d="M3 9L2 10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+</svg>`;
+
+// Yellow card SVG — football-style bright yellow card
+const YELLOW_CARD_SVG = `<svg width="12" height="16" viewBox="0 0 12 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0.6" y="0.6" width="10.8" height="14.8" rx="1.4" fill="#f5d800" stroke="#c9aa00" stroke-width="1.2"/>
+</svg>`;
+
+const LINK_SVG = `<svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M4.5 2H2a1 1 0 00-1 1v6a1 1 0 001 1h6a1 1 0 001-1V6.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M7 1h3m0 0v3m0-3L5.5 5.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
+// ═══════════════════════════════════════════════════════
+// DATE CHIP BUILDER
+// ═══════════════════════════════════════════════════════
+// Returns HTML string for follow-up and start date chips shown in card bottom-right
+function buildDateChips(followupDate, closeDate) {
+  const chips = [];
+
+  // Follow-up chip
+  if (followupDate) {
+    const d = daysUntil(followupDate);
+    const overdue = d !== null && d < 0;
+    const label = d === null ? fmtDate(followupDate)
+                : d === 0   ? 'Today'
+                : d < 0     ? Math.abs(d) + 'd'
+                :              d + 'd';
+    chips.push(`<div class="date-chip${overdue ? ' overdue' : ''}" title="Follow-up: ${fmtDate(followupDate)}">${FOLLOWUP_ICON} ${label}</div>`);
+  }
+
+  // Start/close date chip
+  if (closeDate) {
+    const d = daysUntil(closeDate);
+    const overdue = d !== null && d < 0;
+    const label = d === null ? fmtDate(closeDate)
+                : d === 0   ? 'Today'
+                : d < 0     ? Math.abs(d) + 'd'
+                :              d + 'd';
+    chips.push(`<div class="date-chip${overdue ? ' overdue' : ''}" title="Close date: ${fmtDate(closeDate)}">${START_ICON} ${label}</div>`);
+  }
+
+  if (!chips.length) return '';
+  return `<div class="card-date-chips">${chips.join('')}</div>`;
+}
+
+// Yellow card: shown when cleanup condition is met (overdue close or overdue follow-up)
+function yellowCardBadge(o) {
+  const closeD   = daysUntil(o.closeDate);
+  const followD  = daysUntil(o.followupDate);
+  const needsAttention = (closeD !== null && closeD < 0) || (followD !== null && followD < 0);
+  if (!needsAttention) return '';
+  return `<span class="yellow-card-badge" title="Needs attention">${YELLOW_CARD_SVG}</span>`;
+}
+
+// ═══════════════════════════════════════════════════════
+// SOURCE DROPDOWN
+// ═══════════════════════════════════════════════════════
+function buildSourceOptions() {
+  const allSources = new Set();
+  ALL_OPEN.forEach(o  => allSources.add(o.source  || ''));
+  ALL_LEADS.forEach(l => allSources.add(l.source || ''));
+
+  const sorted = [...allSources].sort((a,b) => {
+    if (!a) return 1;
+    if (!b) return -1;
+    return a.localeCompare(b);
+  });
+
+  const container = document.getElementById('sourceOptions');
+  container.innerHTML = '';
+  sorted.forEach(src => {
+    const label = src || '— No source —';
+    const div = document.createElement('div');
+    div.className = 'source-option';
+    div.dataset.value = src;
+    div.innerHTML = `<input type="checkbox" id="src-${src}" value="${src}"><label for="src-${src}" style="cursor:pointer;flex:1">${label}</label>`;
+    div.querySelector('input').addEventListener('change', e => {
+      if (e.target.checked) activeSources.add(src);
+      else activeSources.delete(src);
+      updateSourceBtn();
+      renderBoard();
+    });
+    container.appendChild(div);
+  });
+}
+
+function filterSourceOptions(q) {
+  const lower = q.toLowerCase();
+  document.querySelectorAll('.source-option').forEach(el => {
+    const label = (el.dataset.value || '— No source —').toLowerCase();
+    el.classList.toggle('hidden', !label.includes(lower));
+  });
+}
+
+function toggleAllSources() {
+  const anyChecked = activeSources.size > 0;
+  activeSources.clear();
+  if (!anyChecked) {
+    document.querySelectorAll('.source-option input').forEach(cb => {
+      cb.checked = true;
+      activeSources.add(cb.value);
+    });
+  } else {
+    document.querySelectorAll('.source-option input').forEach(cb => { cb.checked = false; });
+  }
+  updateSourceBtn();
+  renderBoard();
+}
+
+function updateSourceBtn() {
+  const btn = document.getElementById('sourceBtn');
+  const countEl = document.getElementById('source-count');
+  if (activeSources.size > 0) {
+    btn.classList.add('active');
+    countEl.textContent = '(' + activeSources.size + ')';
+  } else {
+    btn.classList.remove('active');
+    countEl.textContent = '';
+  }
+}
+
+function toggleSourceDropdown(e) {
+  e.stopPropagation();
+  const dropdown = document.getElementById('sourceDropdown');
+  const isOpen = dropdown.classList.contains('open');
+  dropdown.classList.toggle('open');
+  if (!isOpen) {
+    const rect = document.getElementById('sourceBtn').getBoundingClientRect();
+    dropdown.style.top  = (rect.bottom + 4) + 'px';
+    dropdown.style.left = rect.left + 'px';
+  }
+}
+
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('sourceWrap');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('sourceDropdown')?.classList.remove('open');
+  }
+});
+
+// ── Tooltip positioning ──
+// Toolbar height: header (48px) + 2 filter rows (~38px each) = ~124px
+// Cards scroll within col-cards, so we measure card position relative to viewport.
+// If card top is within THRESHOLD px of the toolbar bottom → show tooltip below.
+const TOOLBAR_HEIGHT = 130; // px — approx sticky header + toolbar
+const TOOLTIP_THRESHOLD = 80; // if card top < toolbar + threshold → go below
+
+document.addEventListener('mouseover', e => {
+  const card = e.target.closest('.card');
+  if (!card) return;
+  const tooltip = card.querySelector('.card-tooltip');
+  if (!tooltip) return;
+  const rect = card.getBoundingClientRect();
+  if (rect.top - TOOLBAR_HEIGHT < TOOLTIP_THRESHOLD) {
+    tooltip.classList.remove('above');
+    tooltip.classList.add('below');
+  } else {
+    tooltip.classList.remove('below');
+    tooltip.classList.add('above');
+  }
+});
+
+function passesSourceFilter(o) {
+  if (activeSources.size === 0) return true;
+  return activeSources.has(o.source || '');
+}
+
+// ═══════════════════════════════════════════════════════
+// SMART FILTER DEFINITIONS
+// ═══════════════════════════════════════════════════════
+const SMART_FILTERS = {
+  hot:   o => o.prob > 60,
+  large: o => o.revenue > 100000,
+  soon:  o => { const d = daysUntil(o.closeDate); return d !== null && d >= 0 && d < 30; },
+  clean: o => {
+    const d = daysUntil(o.closeDate);
+    const f = daysUntil(o.followupDate);
+    return (d !== null && d < 0) || (f !== null && f < 0);
+  },
+};
+
+// ═══════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════
+function fmt(n) {
+  if (!n) return '0 €';
+  if (n >= 1e6) return (n/1e6).toFixed(2).replace('.',',') + ' M€';
+  if (n >= 1e3) return Math.round(n/1e3) + ' k€';
+  return Math.round(n) + ' €';
+}
+function parseDate(ds) {
+  if (!ds) return null;
+  const day = ds.split('T')[0];
+  const [y, m, d] = day.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+function daysUntil(ds) {
+  if (!ds) return null;
+  const d = parseDate(ds);
+  if (!d) return null;
+  return Math.round((d - TODAY) / 86400000);
+}
+function heat(p) { return p >= 75 ? 'hot' : p >= 50 ? 'warm' : 'cold'; }
+function firstName(n) { return (n||'').split(' ')[0]; }
+function fmtDate(ds) {
+  if (!ds) return '';
+  const d = new Date(ds);
+  return d.getDate() + '.' + (d.getMonth()+1) + '.';
+}
+function oppFormUrl(id) {
+  return (ORG_URL||'') + '/main.aspx?etn=opportunity&pagetype=entityrecord&id=' + encodeURIComponent('{'+id.toUpperCase()+'}');
+}
+function leadFormUrl(id) {
+  return (ORG_URL||'') + '/main.aspx?etn=lead&pagetype=entityrecord&id=' + encodeURIComponent('{'+id.toUpperCase()+'}');
+}
+
+// ═══════════════════════════════════════════════════════
+// SORT
+// ═══════════════════════════════════════════════════════
+function sortOpps(opps) {
+  return [...opps].sort((a, b) => {
+    if (activeSort === 'revenue') return b.revenue - a.revenue;
+    if (activeSort === 'prob')    return b.prob - a.prob;
+    if (activeSort === 'date') {
+      if (!a.closeDate && !b.closeDate) return 0;
+      if (!a.closeDate) return 1;
+      if (!b.closeDate) return -1;
+      return new Date(a.closeDate) - new Date(b.closeDate);
+    }
+    return 0;
+  });
+}
+
+function setSort(s, btn) {
+  activeSort = s;
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderBoard();
+}
+
+// ═══════════════════════════════════════════════════════
+// SMART FILTERS
+// ═══════════════════════════════════════════════════════
+function toggleSmartFilter(key, btn) {
+  if (activeSmartFilters.has(key)) {
+    activeSmartFilters.delete(key);
+    btn.classList.remove('active');
+  } else {
+    activeSmartFilters.add(key);
+    btn.classList.add('active');
+  }
+  renderBoard();
+}
+
+function passesSmartFilters(o) {
+  if (activeSmartFilters.size === 0) return true;
+  for (const key of activeSmartFilters) {
+    if (!SMART_FILTERS[key](o)) return false;
+  }
+  return true;
+}
+
+function updateSmartCounts(pool) {
+  for (const [key, fn] of Object.entries(SMART_FILTERS)) {
+    const count = pool.filter(fn).length;
+    const el = document.getElementById('sf-' + key + '-count');
+    if (el) el.textContent = count ? '('+count+')' : '';
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// OWNER FILTERS
+// ═══════════════════════════════════════════════════════
+let ALL_OPEN  = [];
+let ALL_WON   = [];
+let ALL_LEADS = [];
+
+function buildOwnerFilters() {
+  const ownerMap = {};
+  ALL_OPEN.forEach(o  => { ownerMap[o.ownerId]  = o.ownerName; });
+  ALL_LEADS.forEach(l => { ownerMap[l.ownerId]  = l.ownerName; });
+
+  const allBtn = document.querySelector('[data-filter="all"]');
+  allBtn.innerHTML = 'All Users <span class="filter-count">('+ALL_OPEN.length+')</span>';
+
+  const meBtn = document.getElementById('meBtn');
+  meBtn.dataset.owner = ME_ID;
+  const meCount = ALL_OPEN.filter(o => o.ownerId === ME_ID).length;
+  meBtn.innerHTML = (ME_NAME ? firstName(ME_NAME) : 'Me') + ' <span class="filter-count">('+meCount+')</span>';
+
+  const container = document.getElementById('ownerFilters');
+  container.innerHTML = '';
+  Object.entries(ownerMap)
+    .sort((a,b) => firstName(a[1]).localeCompare(firstName(b[1])))
+    .forEach(([id, name]) => {
+      if (id === ME_ID) return;
+      const count = ALL_OPEN.filter(o => o.ownerId === id).length;
+      const btn = document.createElement('button');
+      btn.className = 'filter-btn';
+      btn.dataset.owner = id;
+      btn.dataset.name  = firstName(name);
+      btn.innerHTML = firstName(name) + ' <span class="filter-count">('+count+')</span>';
+      btn.onclick = () => setOwnerFilter(id, btn);
+      container.appendChild(btn);
+    });
+
+  highlightOwnerActive();
+}
+
+function highlightOwnerActive() {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  const sel = document.querySelector('[data-filter="'+activeOwner+'"]') ||
+              document.querySelector('[data-owner="'+activeOwner+'"]');
+  if (sel) sel.classList.add('active');
+}
+
+function setOwnerFilter(f, btn) {
+  activeOwner = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderBoard();
+}
+
+function updateOwnerCounts(pool) {
+  const allBtn = document.querySelector('[data-filter="all"]');
+  if (allBtn) allBtn.innerHTML = 'All Users <span class="filter-count">('+(ALL_OPEN.length + ALL_LEADS.length)+')</span>';
+
+  const meBtn = document.getElementById('meBtn');
+  if (meBtn) {
+    const meCount = pool.filter(o => o.ownerId === ME_ID).length;
+    meBtn.innerHTML = (ME_NAME ? firstName(ME_NAME) : 'Me') + ' <span class="filter-count">('+meCount+')</span>';
+  }
+
+  document.querySelectorAll('#ownerFilters .filter-btn').forEach(btn => {
+    const id   = btn.dataset.owner;
+    const name = btn.dataset.name || firstName(btn.textContent);
+    const count = pool.filter(o => o.ownerId === id).length;
+    btn.innerHTML = name + ' <span class="filter-count">('+count+')</span>';
+  });
+}
+
+function onSearch(val) {
+  searchQuery = val.trim().toLowerCase();
+  document.getElementById('searchClear').classList.toggle('visible', searchQuery.length > 0);
+  renderBoard();
+}
+
+function clearSearch() {
+  searchQuery = '';
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchClear').classList.remove('visible');
+  renderBoard();
+}
+
+function passesSearch(o) {
+  if (!searchQuery) return true;
+  return o.topic.toLowerCase().includes(searchQuery) ||
+         o.customer.toLowerCase().includes(searchQuery);
+}
+
+// ═══════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════
+function renderBoard() {
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+
+  const ownerPool = activeOwner === 'all'
+    ? ALL_OPEN
+    : ALL_OPEN.filter(o => o.ownerId === activeOwner);
+
+  updateSmartCounts(ownerPool);
+
+  const smartSearchPool = [
+    ...ALL_OPEN.filter(o => passesSmartFilters(o) && passesSearch(o)),
+    ...ALL_LEADS.filter(l => passesSearch(l)),
+  ];
+  updateOwnerCounts(smartSearchPool);
+
+  const wonFiltered = activeOwner === 'all'
+    ? ALL_WON
+    : ALL_WON.filter(o => o.ownerId === activeOwner);
+
+  // ── Leads column ──
+  const leadsFiltered = activeOwner === 'all'
+    ? ALL_LEADS
+    : ALL_LEADS.filter(l => l.ownerId === activeOwner);
+  const leadsVisible = leadsFiltered.filter(l => passesSearch(l) && passesSourceFilter(l));
+
+  const leadCol = document.createElement('div');
+  leadCol.className = 'column lead-col';
+  leadCol.innerHTML = `
+    <div class="col-header">
+      <div class="col-name">Open Leads</div>
+      <div class="col-stats">
+        <span class="hi">${leadsVisible.length}</span> lead${leadsVisible.length!==1?'s':''}
+        ${leadsVisible.length < leadsFiltered.length ? `<span style="color:#a19f9d"> · ${leadsFiltered.length - leadsVisible.length} filtered</span>` : ''}
+      </div>
+    </div>
+    <div class="col-cards" id="c-leads"></div>`;
+  board.appendChild(leadCol);
+
+  const leadsArea = document.getElementById('c-leads');
+  if (!leadsVisible.length) {
+    leadsArea.innerHTML = '<div class="empty-col">No open leads</div>';
+  } else {
+    [...leadsVisible]
+      .sort((a,b) => {
+        if (!a.followupDate && !b.followupDate) return 0;
+        if (!a.followupDate) return 1;
+        if (!b.followupDate) return -1;
+        return new Date(a.followupDate) - new Date(b.followupDate);
+      })
+      .forEach(l => {
+        const hasTooltip = l.nextAction;
+        const tooltipContent = l.nextAction || '';
+        // Yellow card for overdue follow-up
+        const followD = daysUntil(l.followupDate);
+        const needsAttention = followD !== null && followD < 0;
+
+        const card = document.createElement('div');
+        card.className = 'card lead';
+        card.innerHTML = `
+          ${hasTooltip ? `<div class="card-tooltip">${tooltipContent}</div>` : ''}
+          ${needsAttention ? `<span class="yellow-card-badge" title="Follow-up overdue">${YELLOW_CARD_SVG}</span>` : ''}
+          <a class="card-link" href="${leadFormUrl(l.id)}" target="_blank" title="Open in D365">${LINK_SVG}</a>
+          <div class="card-topic">${l.topic}</div>
+          <div class="card-customer">${l.customer}</div>
+          <div class="card-footer">
+            <span class="card-owner">${firstName(l.ownerName)}</span>
+            ${buildDateChips(l.followupDate, null)}
+          </div>`;
+        leadsArea.appendChild(card);
+      });
+  }
+
+  // ── Pipeline columns ──
+  STAGES.forEach(stage => {
+    const allInStage = ownerPool.filter(o => o.stage === stage.key);
+    const visibleOpps = sortOpps(allInStage.filter(o => passesSmartFilters(o) && passesSearch(o) && passesSourceFilter(o)));
+    const hiddenCount  = allInStage.length - visibleOpps.length;
+
+    const visibleEst = visibleOpps.reduce((s,o) => s + o.revenue, 0);
+    const visibleWtd = Math.round(visibleOpps.reduce((s,o) => s + o.revenue * o.prob / 100, 0));
+
+    const col = document.createElement('div');
+    col.className = 'column';
+    col.innerHTML = `
+      <div class="col-header">
+        <div class="col-name">${stage.label}</div>
+        <div class="col-stats">
+          <span class="hi">${fmt(visibleEst)}</span>
+          &nbsp;(${fmt(visibleWtd)} weighted) · ${visibleOpps.length} deal${visibleOpps.length!==1?'s':''}
+          ${hiddenCount > 0 ? `<span style="color:#a19f9d"> · ${hiddenCount} filtered</span>` : ''}
+        </div>
+      </div>
+      <div class="col-cards" id="c-${stage.key}"></div>`;
+    board.appendChild(col);
+
+    const area = document.getElementById('c-' + stage.key);
+    if (!visibleOpps.length) {
+      area.innerHTML = `<div class="empty-col">${allInStage.length ? 'No cards match current filters' : 'No opportunities'}</div>`;
+      return;
+    }
+
+    visibleOpps.forEach(o => {
+      const h = heat(o.prob);
+      const hasTooltip = o.nextAction;
+      const tooltipContent = o.nextAction || '';
+
+      const card = document.createElement('div');
+      card.className = 'card ' + h;
+      card.innerHTML = `
+        ${hasTooltip ? `<div class="card-tooltip">${tooltipContent}</div>` : ''}
+        ${yellowCardBadge(o)}
+        <a class="card-link" href="${oppFormUrl(o.id)}" target="_blank" title="Open in D365">${LINK_SVG}</a>
+        <div class="card-topic">${o.topic}</div>
+        <div class="card-customer">${o.customer}</div>
+        <div class="card-footer">
+          <div style="display:flex;flex-direction:column;gap:2px;min-width:0;">
+            <span class="card-value">${fmt(o.revenue)}</span>
+            <div style="display:flex;align-items:center;gap:4px;">
+              <span class="prob-badge">${o.prob}%</span>
+              <span class="card-owner">${firstName(o.ownerName)}</span>
+            </div>
+          </div>
+          ${buildDateChips(o.followupDate, o.closeDate)}
+        </div>`;
+      area.appendChild(card);
+    });
+  });
+
+  // ── Won column ──
+  const wonVisible = wonFiltered.filter(o => passesSearch(o) && passesSourceFilter(o));
+  const totalWon = wonVisible.reduce((s,o) => s + o.actualValue, 0);
+  const wonCol = document.createElement('div');
+  wonCol.className = 'column won-col';
+  wonCol.innerHTML = `
+    <div class="col-header">
+      <div class="col-name">✓ Won (last 30 days)</div>
+      <div class="col-stats">
+        <span class="hi">${fmt(totalWon)}</span>
+        &nbsp;· ${wonVisible.length} deal${wonVisible.length!==1?'s':''}
+        ${wonVisible.length < wonFiltered.length ? `<span style="color:#a19f9d"> · ${wonFiltered.length - wonVisible.length} filtered</span>` : ''}
+      </div>
+    </div>
+    <div class="col-cards" id="c-won"></div>`;
+  board.appendChild(wonCol);
+
+  const wonArea = document.getElementById('c-won');
+  if (!wonVisible.length) {
+    wonArea.innerHTML = '<div class="empty-col">No won deals in last 30 days</div>';
+  } else {
+    [...wonVisible].sort((a,b) => new Date(b.closeDate) - new Date(a.closeDate)).forEach(o => {
+      const card = document.createElement('div');
+      card.className = 'card won';
+      card.innerHTML = `
+        <a class="card-link" href="${oppFormUrl(o.id)}" target="_blank" title="Open in D365">${LINK_SVG}</a>
+        <div class="card-topic">${o.topic}</div>
+        <div class="card-customer">${o.customer}</div>
+        <div class="card-footer">
+          <span class="card-value">${fmt(o.actualValue)}</span>
+          <div class="card-right">
+            <span class="date-badge">${fmtDate(o.closeDate)}</span>
+            <span class="card-owner">${firstName(o.ownerName)}</span>
+          </div>
+        </div>`;
+      wonArea.appendChild(card);
+    });
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+function showError(msg) {
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('errorMsg').textContent = msg;
+  document.getElementById('errorBox').style.display = 'block';
+}
+
+async function init() {
+  document.getElementById('refreshBtn').addEventListener('click', () => {
+    document.getElementById('board').style.display        = 'none';
+    document.getElementById('loadingState').style.display = 'flex';
+    document.getElementById('errorBox').style.display     = 'none';
+    init();
+  });
+
+  try {
+    const { openData, wonData, leadData } = await loadData();
+    ALL_OPEN  = openData;
+    ALL_WON   = wonData;
+    ALL_LEADS = leadData;
+
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('board').style.display        = 'grid';
+
+    buildOwnerFilters();
+    buildSourceOptions();
+    renderBoard();
+  } catch(err) {
+    console.error('Kanban load error:', err);
+    showError(err.message || 'Unknown error — check browser console.');
+  }
+}
+
+init();
+</script>
+
+</body></html>

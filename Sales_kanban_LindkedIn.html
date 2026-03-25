@@ -1,0 +1,1082 @@
+<!--
+  =============================================================
+  D365 Sales Kanban Board
+  =============================================================
+  A vibe coding example by Lasse Räty.
+  Free for anyone to use, share and modify.
+
+  I take no responsibility for anything this code does,
+  and neither does Claude (the AI that helped build it).
+
+  How it works:
+  - Single flat HTML file — deploy as a Dynamics 365 web resource
+  - All HTML, CSS and JavaScript in one file, no build step needed
+  - Queries the D365 Web API (/api/data/v9.2) using the current
+    user's authenticated browser session (no extra auth needed)
+  - Uses only standard out-of-the-box D365 fields
+  - Xrm.Utility provides current user ID and org URL at runtime
+  =============================================================
+-->
+<html><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>D365 Sales Kanban</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: #f3f2f1;
+  color: #201f1e;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+}
+
+/* ── HEADER ── */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+  height: 48px;
+  background: #fff;
+  border-bottom: 1px solid #e1dfdd;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-left { display: flex; align-items: center; gap: 12px; }
+.header-logo { height: 22px; width: auto; filter: invert(1); }
+.header-divider { width: 1px; height: 20px; background: #e1dfdd; }
+.header-title { font-size: 14px; font-weight: 600; color: #201f1e; }
+.header-right { display: flex; align-items: center; gap: 8px; }
+
+.refresh-btn {
+  background: none; border: 1px solid #e1dfdd; color: #605e5c;
+  width: 30px; height: 30px; border-radius: 2px; cursor: pointer;
+  font-size: 15px; display: flex; align-items: center; justify-content: center;
+  transition: background 0.1s;
+}
+.refresh-btn:hover { background: #f3f2f1; border-color: #c8c6c4; }
+
+/* ── SEARCH ── */
+.search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.search-icon {
+  position: absolute;
+  left: 8px;
+  font-size: 12px;
+  pointer-events: none;
+  line-height: 1;
+}
+.search-input {
+  width: 220px;
+  padding: 5px 28px 5px 28px;
+  border: 1px solid #c8c6c4;
+  border-radius: 2px;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 12px;
+  color: #201f1e;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.1s, box-shadow 0.1s;
+}
+.search-input:focus {
+  border-color: #0078d4;
+  box-shadow: 0 0 0 1px #0078d4;
+}
+.search-input::placeholder { color: #a19f9d; }
+.search-clear {
+  position: absolute;
+  right: 6px;
+  background: none;
+  border: none;
+  color: #a19f9d;
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1;
+  padding: 2px;
+  display: none;
+}
+.search-clear:hover { color: #201f1e; }
+.search-clear.visible { display: block; }
+.sort-btn {
+  padding: 3px 8px;
+  border: 1px solid #c8c6c4;
+  background: #fff;
+  color: #201f1e;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 11px;
+  border-radius: 2px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.1s;
+}
+.sort-btn:hover { background: #f3f2f1; }
+.sort-btn.active { background: #0078d4; border-color: #0078d4; color: #fff; font-weight: 600; }
+
+/* ── TOOLBAR ── */
+.toolbar {
+  background: #fff;
+  border-bottom: 1px solid #e1dfdd;
+  flex-shrink: 0;
+}
+
+.filter-row {
+  padding: 6px 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  min-height: 38px;
+  border-bottom: 1px solid #f3f2f1;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.filter-row::-webkit-scrollbar { display: none; }
+.filter-row:last-child { border-bottom: none; }
+
+.filter-label { font-size: 11px; color: #a19f9d; margin-right: 2px; white-space: nowrap; }
+
+.filter-btn {
+  padding: 3px 9px;
+  border: 1px solid #c8c6c4;
+  background: #fff;
+  color: #201f1e;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 12px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background 0.1s;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.filter-btn:hover { background: #f3f2f1; border-color: #a19f9d; }
+.filter-btn.active { background: #0078d4; border-color: #0078d4; color: #fff; font-weight: 600; }
+.filter-count { font-weight: 400; opacity: 0.75; font-size: 11px; }
+
+/* Smart filter buttons */
+.sf-btn {
+  padding: 3px 9px;
+  border: 1px solid #c8c6c4;
+  background: #fff;
+  color: #201f1e;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.1s;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.sf-btn:hover { background: #f3f2f1; border-color: #a19f9d; }
+.sf-btn.active { font-weight: 600; }
+
+.sf-btn.sf-hot    { border-color: #d13438; color: #d13438; }
+.sf-btn.sf-hot.active    { background: #d13438; color: #fff; }
+.sf-btn.sf-large  { border-color: #0078d4; color: #0078d4; }
+.sf-btn.sf-large.active  { background: #0078d4; color: #fff; }
+.sf-btn.sf-soon   { border-color: #ca5010; color: #ca5010; }
+.sf-btn.sf-soon.active   { background: #ca5010; color: #fff; }
+.sf-count { opacity: 0.75; font-size: 11px; font-weight: 400; }
+
+/* ── LOADING / ERROR ── */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 14px;
+  color: #605e5c;
+}
+.spinner {
+  width: 32px; height: 32px;
+  border: 3px solid #e1dfdd;
+  border-top-color: #0078d4;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.error-box {
+  margin: 24px;
+  padding: 16px 20px;
+  background: #fde7e9;
+  border: 1px solid #f1707b;
+  border-radius: 2px;
+  color: #a4262c;
+  font-size: 12px;
+  line-height: 1.6;
+  display: none;
+}
+.error-box strong { display: block; margin-bottom: 4px; font-size: 13px; }
+
+/* ── BOARD ── */
+.board {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  padding: 16px;
+  align-items: stretch;  /* columns same height */
+  min-width: 0;
+  min-height: 0;
+}
+
+/* ── COLUMN ── */
+.column {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #e1dfdd;
+  border-radius: 2px;
+}
+
+.col-cards {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;                    /* fill remaining column height */
+  overflow-y: visible;        /* don't clip tooltips */
+  overflow-x: visible;
+}
+.col-header {
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid #e1dfdd;
+  background: #faf9f8;
+}
+.col-name { font-size: 13px; font-weight: 600; color: #201f1e; margin-bottom: 3px; }
+.col-stats { font-size: 11px; color: #605e5c; }
+.col-stats .hi { color: #0078d4; font-weight: 600; }
+
+.column.won-col .col-header { background: #f0f9f0; }
+.column.won-col .col-name { color: #107c10; }
+.column.won-col .col-stats .hi { color: #107c10; }
+
+/* Leads column */
+.column.lead-col .col-header { background: #f5f0fb; }
+.column.lead-col .col-name { color: #6b2fa0; }
+.column.lead-col .col-stats .hi { color: #6b2fa0; }
+.card.lead::before { background: #8764b8; }
+
+/* ── TOOLTIP ── */
+.card { position: relative; }
+.card-tooltip {
+  display: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: #f8f8f6;
+  color: #201f1e;
+  border: 1px solid #e1dfdd;
+  font-size: 11px;
+  line-height: 1.5;
+  padding: 7px 10px;
+  border-radius: 3px;
+  z-index: 200;
+  pointer-events: none;
+  word-break: break-word;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+/* Arrow up — tooltip below card */
+.card-tooltip.below {
+  top: calc(100% + 6px);
+  bottom: auto;
+}
+.card-tooltip.below::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 16px;
+  border: 5px solid transparent;
+  border-bottom-color: #e1dfdd;
+}
+.card-tooltip.below::after {
+  content: '';
+  position: absolute;
+  bottom: calc(100% - 1px);
+  left: 17px;
+  border: 4px solid transparent;
+  border-bottom-color: #f8f8f6;
+}
+/* Arrow down — tooltip above card */
+.card-tooltip.above {
+  bottom: calc(100% + 6px);
+  top: auto;
+}
+.card-tooltip.above::before {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 16px;
+  border: 5px solid transparent;
+  border-top-color: #e1dfdd;
+}
+.card-tooltip.above::after {
+  content: '';
+  position: absolute;
+  top: calc(100% - 1px);
+  left: 17px;
+  border: 4px solid transparent;
+  border-top-color: #f8f8f6;
+}
+.card:hover .card-tooltip { display: block; }
+
+/* ── CARDS ── */
+
+/* ── CARD ── */
+.card {
+  border: 1px solid #e1dfdd;
+  border-radius: 2px;
+  padding: 9px 10px 8px 14px;
+  background: #fff;
+  cursor: pointer;
+  position: relative;
+  transition: box-shadow 0.1s, border-color 0.1s;
+  min-width: 0;
+}
+.card:hover { box-shadow: 0 2px 6px rgba(0,0,0,0.1); border-color: #c8c6c4; }
+
+.card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  border-radius: 2px 0 0 2px;
+}
+.card.hot::before  { background: #d13438; }
+.card.warm::before { background: #107c10; }
+.card.cold::before { background: #0078d4; }
+.card.won::before  { background: #107c10; }
+
+/* Highlight ring when smart filter is active */
+.card.sf-highlight { box-shadow: 0 0 0 2px #0078d4; border-color: #0078d4; }
+
+/* ── DATE CHIP (close date only) ── */
+.card-date-chips {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.date-chip {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  color: #605e5c;
+  white-space: nowrap;
+}
+.date-chip svg { flex-shrink: 0; }
+
+/* link icon */
+.card-link {
+  position: absolute;
+  top: 7px; right: 8px;
+  color: #c8c6c4;
+  text-decoration: none;
+  line-height: 1;
+  transition: color 0.1s;
+  flex-shrink: 0;
+}
+.card-link:hover { color: #0078d4; }
+.card-link svg { display: block; }
+
+/* Topic: leave room for link + possible yellow card */
+.card-topic {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0078d4;
+  margin-bottom: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-right: 38px; /* room for link icon + yellow card */
+  min-width: 0;
+}
+.card-customer {
+  font-size: 11px;
+  color: #605e5c;
+  margin-bottom: 7px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-top: 6px;
+  border-top: 1px solid #f3f2f1;
+  gap: 4px;
+  min-width: 0;
+}
+.card-value { font-size: 12px; font-weight: 600; color: #201f1e; flex-shrink: 0; }
+.card-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+.prob-badge {
+  font-size: 10px; font-weight: 700;
+  padding: 1px 5px; border-radius: 10px;
+  flex-shrink: 0;
+}
+.card.hot  .prob-badge { background: #fde7e9; color: #d13438; }
+.card.warm .prob-badge { background: #dff6dd; color: #107c10; }
+.card.cold .prob-badge { background: #deecf9; color: #0078d4; }
+
+.date-badge {
+  font-size: 10px; font-weight: 600;
+  padding: 1px 6px; border-radius: 10px;
+  background: #dff6dd; color: #107c10;
+}
+.card-owner { font-size: 10px; color: #a19f9d; }
+.card-days { font-size: 10px; color: #a19f9d; }
+.card-days.soon    { color: #ca5010; font-weight: 600; }
+.card-days.overdue { color: #d13438; font-weight: 600; }
+.overdue-emoji { font-size: 12px; line-height: 1; }
+
+.empty-col { padding: 20px; text-align: center; color: #a19f9d; font-size: 12px; }
+</style>
+<meta></head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <span class="header-title">Sales Kanban</span>
+  </div>
+  <div class="header-right">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="searchInput" type="text" placeholder="Search topic or customer…" oninput="onSearch(this.value)">
+      <button class="search-clear" id="searchClear" onclick="clearSearch()" title="Clear">✕</button>
+    </div>
+    <button class="refresh-btn" id="refreshBtn" title="Refresh">↻</button>
+  </div>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="filter-row">
+    <span class="filter-label">View:</span>
+    <button class="filter-btn" data-filter="all" onclick="setOwnerFilter('all',this)">All Users</button>
+    <button class="filter-btn" id="meBtn" onclick="setOwnerFilter(ME_ID,this)">Me</button>
+    <span id="ownerFilters" style="display:inline-flex;align-items:center;gap:6px;"></span>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">Filter:</span>
+    <button class="sf-btn sf-hot" id="sf-hot" onclick="toggleSmartFilter('hot',this)">🔥 Hot <span class="sf-count" id="sf-hot-count"></span></button>
+    <button class="sf-btn sf-large" id="sf-large" onclick="toggleSmartFilter('large',this)">💰 Large <span class="sf-count" id="sf-large-count"></span></button>
+    <button class="sf-btn sf-soon" id="sf-soon" onclick="toggleSmartFilter('soon',this)">⏰ Closing soon <span class="sf-count" id="sf-soon-count"></span></button>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:4px;">
+      <span class="filter-label">Sort:</span>
+      <button class="sort-btn active" data-sort="revenue" onclick="setSort('revenue',this)">💶 €</button>
+      <button class="sort-btn" data-sort="date" onclick="setSort('date',this)">📅 Date</button>
+      <button class="sort-btn" data-sort="prob" onclick="setSort('prob',this)">% Prob</button>
+    </div>
+  </div>
+</div>
+
+<!-- ERROR -->
+<div class="error-box" id="errorBox">
+  <strong>Failed to load data from CRM</strong>
+  <span id="errorMsg"></span>
+</div>
+
+<!-- LOADING -->
+<div class="loading" id="loadingState">
+  <div class="spinner"></div>
+  <span>Loading opportunities from CRM…</span>
+</div>
+
+<!-- BOARD -->
+<div class="board" id="board" style="display:none;"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════
+const API   = '/api/data/v9.2';
+const TODAY = new Date();
+TODAY.setHours(0,0,0,0);
+
+const THIRTY_AGO = new Date(TODAY);
+THIRTY_AGO.setDate(THIRTY_AGO.getDate() - 30);
+
+const STAGES = [
+  { key: 'develop', label: 'Develop' },
+  { key: 'propose', label: 'Propose' },
+  { key: 'close',   label: 'Close'   },
+];
+
+function getStage(stepname) {
+  if (!stepname) return null;
+  const s = stepname.toLowerCase();
+  if (s.includes('develop')) return 'develop';
+  if (s.includes('propose')) return 'propose';
+  if (s.includes('close'))   return 'close';
+  return null;
+}
+
+let ME_ID   = '';
+let ME_NAME = '';
+let ORG_URL = '';
+try {
+  const ctx = Xrm.Utility.getGlobalContext();
+  ORG_URL   = ctx.getClientUrl();
+  ME_ID     = (ctx.userSettings.userId || '').replace(/[{}]/g,'').toLowerCase();
+  ME_NAME   = ctx.userSettings.userName || '';
+} catch(e) {}
+
+let activeOwner  = ME_ID || 'all';
+let activeSort   = 'revenue';
+let activeSmartFilters = new Set();
+let searchQuery  = '';
+let activeSources = new Set();
+
+// ═══════════════════════════════════════════════════════
+// SVG ICONS
+// ═══════════════════════════════════════════════════════
+const LINK_SVG = `<svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M4.5 2H2a1 1 0 00-1 1v6a1 1 0 001 1h6a1 1 0 001-1V6.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M7 1h3m0 0v3m0-3L5.5 5.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
+// ═══════════════════════════════════════════════════════
+// SOURCE DROPDOWN — removed (custom field)
+// ═══════════════════════════════════════════════════════
+function passesSourceFilter(o) { return true; }
+
+document.addEventListener('click', e => {});
+
+// ── Tooltip positioning ──
+// Toolbar height: header (48px) + 2 filter rows (~38px each) = ~124px
+// Cards scroll within col-cards, so we measure card position relative to viewport.
+// If card top is within THRESHOLD px of the toolbar bottom → show tooltip below.
+const TOOLBAR_HEIGHT = 130; // px — approx sticky header + toolbar
+const TOOLTIP_THRESHOLD = 80; // if card top < toolbar + threshold → go below
+
+document.addEventListener('mouseover', e => {
+  const card = e.target.closest('.card');
+  if (!card) return;
+  const tooltip = card.querySelector('.card-tooltip');
+  if (!tooltip) return;
+  const rect = card.getBoundingClientRect();
+  if (rect.top - TOOLBAR_HEIGHT < TOOLTIP_THRESHOLD) {
+    tooltip.classList.remove('above');
+    tooltip.classList.add('below');
+  } else {
+    tooltip.classList.remove('below');
+    tooltip.classList.add('above');
+  }
+});
+
+function passesSourceFilter() { return true; }
+
+// ═══════════════════════════════════════════════════════
+// SMART FILTER DEFINITIONS
+// ═══════════════════════════════════════════════════════
+const SMART_FILTERS = {
+  hot:   o => o.prob > 60,
+  large: o => o.revenue > 100000,
+  soon:  o => { const d = daysUntil(o.closeDate); return d !== null && d >= 0 && d < 30; },
+};
+
+// ═══════════════════════════════════════════════════════
+// API
+// ═══════════════════════════════════════════════════════
+function apiHeaders() {
+  return {
+    'OData-MaxVersion': '4.0',
+    'OData-Version':    '4.0',
+    'Accept':           'application/json',
+    'Content-Type':     'application/json; charset=utf-8',
+    'Prefer':           'odata.maxpagesize=5000,odata.include-annotations="*"'
+  };
+}
+
+async function fetchPages(url) {
+  let results = [], next = url;
+  while (next) {
+    const res = await fetch(next, { headers: apiHeaders() });
+    if (!res.ok) { const t = await res.text().catch(()=>''); throw new Error(`HTTP ${res.status} — ${t.substring(0,300)}`); }
+    const json = await res.json();
+    results = results.concat(json.value || []);
+    next = json['@odata.nextLink'] || null;
+  }
+  return results;
+}
+
+async function resolveCurrentUser() {
+  if (ME_ID) return;
+  try {
+    const res  = await fetch(`${API}/WhoAmI`, { headers: apiHeaders() });
+    const json = await res.json();
+    ME_ID = (json.UserId || '').replace(/[{}]/g,'').toLowerCase();
+  } catch(e) {}
+}
+
+async function loadData() {
+  await resolveCurrentUser();
+
+  const openFields = [
+    'opportunityid','name','estimatedvalue','closeprobability',
+    'stepname','estimatedclosedate',
+    '_ownerid_value','_parentaccountid_value',
+  ].join(',');
+
+  const wonFields = [
+    'opportunityid','name','actualvalue','actualclosedate',
+    '_ownerid_value','_parentaccountid_value',
+  ].join(',');
+
+  const cutoff    = THIRTY_AGO.toISOString().split('T')[0];
+  const wonFilter = `statecode eq 1 and actualclosedate ge ${cutoff}`;
+
+  const leadFields = [
+    'leadid','subject','companyname',
+    '_ownerid_value',
+  ].join(',');
+
+  const [openRaw, wonRaw, leadRaw] = await Promise.all([
+    fetchPages(`${API}/opportunities?$select=${openFields}&$filter=${encodeURIComponent('statecode eq 0')}&$expand=parentaccountid($select=name)&$top=5000`),
+    fetchPages(`${API}/opportunities?$select=${wonFields}&$filter=${encodeURIComponent(wonFilter)}&$expand=parentaccountid($select=name)&$top=5000`),
+    fetchPages(`${API}/leads?$select=${leadFields}&$filter=${encodeURIComponent('statecode eq 0')}&$top=5000`),
+  ]);
+
+  const ownerName = o => o['_ownerid_value@OData.Community.Display.V1.FormattedValue'] || '';
+
+  const openData = openRaw
+    .map(o => ({
+      id:        o.opportunityid,
+      topic:     o.name || '',
+      customer:  o.parentaccountid?.name || '',
+      ownerId:   (o['_ownerid_value'] || '').toLowerCase(),
+      ownerName: ownerName(o),
+      revenue:   parseFloat(o.estimatedvalue)   || 0,
+      prob:      parseFloat(o.closeprobability) || 0,
+      stage:     getStage(o.stepname),
+      closeDate: o.estimatedclosedate ? o.estimatedclosedate.split('T')[0] : null,
+    }))
+    .filter(o => o.stage !== null);
+
+  const wonData = wonRaw.map(o => ({
+    id:          o.opportunityid,
+    topic:       o.name || '',
+    customer:    o.parentaccountid?.name || '',
+    ownerId:     (o['_ownerid_value'] || '').toLowerCase(),
+    ownerName:   ownerName(o),
+    actualValue: parseFloat(o.actualvalue) || 0,
+    closeDate:   o.actualclosedate ? o.actualclosedate.split('T')[0] : null,
+  }));
+
+  const leadData = leadRaw.map(l => ({
+    id:        l.leadid,
+    topic:     l.subject     || '',
+    customer:  l.companyname || '',
+    ownerId:   (l['_ownerid_value'] || '').toLowerCase(),
+    ownerName: l['_ownerid_value@OData.Community.Display.V1.FormattedValue'] || '',
+  }));
+
+  return { openData, wonData, leadData };
+}
+
+// ═══════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════
+function fmt(n) {
+  if (!n) return '0 €';
+  if (n >= 1e6) return (n/1e6).toFixed(2).replace('.',',') + ' M€';
+  if (n >= 1e3) return Math.round(n/1e3) + ' k€';
+  return Math.round(n) + ' €';
+}
+function parseDate(ds) {
+  if (!ds) return null;
+  const day = ds.split('T')[0];
+  const [y, m, d] = day.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+function daysUntil(ds) {
+  if (!ds) return null;
+  const d = parseDate(ds);
+  if (!d) return null;
+  return Math.round((d - TODAY) / 86400000);
+}
+function heat(p) { return p >= 75 ? 'hot' : p >= 50 ? 'warm' : 'cold'; }
+function firstName(n) { return (n||'').split(' ')[0]; }
+function fmtDate(ds) {
+  if (!ds) return '';
+  const d = new Date(ds);
+  return d.getDate() + '.' + (d.getMonth()+1) + '.';
+}
+function oppFormUrl(id) {
+  return (ORG_URL||'') + '/main.aspx?etn=opportunity&pagetype=entityrecord&id=' + encodeURIComponent('{'+id.toUpperCase()+'}');
+}
+function leadFormUrl(id) {
+  return (ORG_URL||'') + '/main.aspx?etn=lead&pagetype=entityrecord&id=' + encodeURIComponent('{'+id.toUpperCase()+'}');
+}
+
+// ═══════════════════════════════════════════════════════
+// SORT
+// ═══════════════════════════════════════════════════════
+function sortOpps(opps) {
+  return [...opps].sort((a, b) => {
+    if (activeSort === 'revenue') return b.revenue - a.revenue;
+    if (activeSort === 'prob')    return b.prob - a.prob;
+    if (activeSort === 'date') {
+      if (!a.closeDate && !b.closeDate) return 0;
+      if (!a.closeDate) return 1;
+      if (!b.closeDate) return -1;
+      return new Date(a.closeDate) - new Date(b.closeDate);
+    }
+    return 0;
+  });
+}
+
+function setSort(s, btn) {
+  activeSort = s;
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderBoard();
+}
+
+// ═══════════════════════════════════════════════════════
+// SMART FILTERS
+// ═══════════════════════════════════════════════════════
+function toggleSmartFilter(key, btn) {
+  if (activeSmartFilters.has(key)) {
+    activeSmartFilters.delete(key);
+    btn.classList.remove('active');
+  } else {
+    activeSmartFilters.add(key);
+    btn.classList.add('active');
+  }
+  renderBoard();
+}
+
+function passesSmartFilters(o) {
+  if (activeSmartFilters.size === 0) return true;
+  for (const key of activeSmartFilters) {
+    if (!SMART_FILTERS[key](o)) return false;
+  }
+  return true;
+}
+
+function updateSmartCounts(pool) {
+  for (const [key, fn] of Object.entries(SMART_FILTERS)) {
+    const count = pool.filter(fn).length;
+    const el = document.getElementById('sf-' + key + '-count');
+    if (el) el.textContent = count ? '('+count+')' : '';
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// OWNER FILTERS
+// ═══════════════════════════════════════════════════════
+let ALL_OPEN  = [];
+let ALL_WON   = [];
+let ALL_LEADS = [];
+
+function buildOwnerFilters() {
+  const ownerMap = {};
+  ALL_OPEN.forEach(o  => { ownerMap[o.ownerId]  = o.ownerName; });
+  ALL_LEADS.forEach(l => { ownerMap[l.ownerId]  = l.ownerName; });
+
+  const allBtn = document.querySelector('[data-filter="all"]');
+  allBtn.innerHTML = 'All Users <span class="filter-count">('+ALL_OPEN.length+')</span>';
+
+  const meBtn = document.getElementById('meBtn');
+  meBtn.dataset.owner = ME_ID;
+  const meCount = ALL_OPEN.filter(o => o.ownerId === ME_ID).length;
+  meBtn.innerHTML = (ME_NAME ? firstName(ME_NAME) : 'Me') + ' <span class="filter-count">('+meCount+')</span>';
+
+  const container = document.getElementById('ownerFilters');
+  container.innerHTML = '';
+  Object.entries(ownerMap)
+    .sort((a,b) => firstName(a[1]).localeCompare(firstName(b[1])))
+    .forEach(([id, name]) => {
+      if (id === ME_ID) return;
+      const count = ALL_OPEN.filter(o => o.ownerId === id).length;
+      const btn = document.createElement('button');
+      btn.className = 'filter-btn';
+      btn.dataset.owner = id;
+      btn.dataset.name  = firstName(name);
+      btn.innerHTML = firstName(name) + ' <span class="filter-count">('+count+')</span>';
+      btn.onclick = () => setOwnerFilter(id, btn);
+      container.appendChild(btn);
+    });
+
+  highlightOwnerActive();
+}
+
+function highlightOwnerActive() {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  const sel = document.querySelector('[data-filter="'+activeOwner+'"]') ||
+              document.querySelector('[data-owner="'+activeOwner+'"]');
+  if (sel) sel.classList.add('active');
+}
+
+function setOwnerFilter(f, btn) {
+  activeOwner = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderBoard();
+}
+
+function updateOwnerCounts(pool) {
+  const allBtn = document.querySelector('[data-filter="all"]');
+  if (allBtn) allBtn.innerHTML = 'All Users <span class="filter-count">('+(ALL_OPEN.length + ALL_LEADS.length)+')</span>';
+
+  const meBtn = document.getElementById('meBtn');
+  if (meBtn) {
+    const meCount = pool.filter(o => o.ownerId === ME_ID).length;
+    meBtn.innerHTML = (ME_NAME ? firstName(ME_NAME) : 'Me') + ' <span class="filter-count">('+meCount+')</span>';
+  }
+
+  document.querySelectorAll('#ownerFilters .filter-btn').forEach(btn => {
+    const id   = btn.dataset.owner;
+    const name = btn.dataset.name || firstName(btn.textContent);
+    const count = pool.filter(o => o.ownerId === id).length;
+    btn.innerHTML = name + ' <span class="filter-count">('+count+')</span>';
+  });
+}
+
+function onSearch(val) {
+  searchQuery = val.trim().toLowerCase();
+  document.getElementById('searchClear').classList.toggle('visible', searchQuery.length > 0);
+  renderBoard();
+}
+
+function clearSearch() {
+  searchQuery = '';
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchClear').classList.remove('visible');
+  renderBoard();
+}
+
+function passesSearch(o) {
+  if (!searchQuery) return true;
+  return o.topic.toLowerCase().includes(searchQuery) ||
+         o.customer.toLowerCase().includes(searchQuery);
+}
+
+// ═══════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════
+function renderBoard() {
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+
+  const ownerPool = activeOwner === 'all'
+    ? ALL_OPEN
+    : ALL_OPEN.filter(o => o.ownerId === activeOwner);
+
+  updateSmartCounts(ownerPool);
+
+  const smartSearchPool = [
+    ...ALL_OPEN.filter(o => passesSmartFilters(o) && passesSearch(o)),
+    ...ALL_LEADS.filter(l => passesSearch(l)),
+  ];
+  updateOwnerCounts(smartSearchPool);
+
+  const wonFiltered = activeOwner === 'all'
+    ? ALL_WON
+    : ALL_WON.filter(o => o.ownerId === activeOwner);
+
+  // ── Leads column ──
+  const leadsFiltered = activeOwner === 'all'
+    ? ALL_LEADS
+    : ALL_LEADS.filter(l => l.ownerId === activeOwner);
+  const leadsVisible = leadsFiltered.filter(l => passesSearch(l) && passesSourceFilter(l));
+
+  const leadCol = document.createElement('div');
+  leadCol.className = 'column lead-col';
+  leadCol.innerHTML = `
+    <div class="col-header">
+      <div class="col-name">Open Leads</div>
+      <div class="col-stats">
+        <span class="hi">${leadsVisible.length}</span> lead${leadsVisible.length!==1?'s':''}
+        ${leadsVisible.length < leadsFiltered.length ? `<span style="color:#a19f9d"> · ${leadsFiltered.length - leadsVisible.length} filtered</span>` : ''}
+      </div>
+    </div>
+    <div class="col-cards" id="c-leads"></div>`;
+  board.appendChild(leadCol);
+
+  const leadsArea = document.getElementById('c-leads');
+  if (!leadsVisible.length) {
+    leadsArea.innerHTML = '<div class="empty-col">No open leads</div>';
+  } else {
+    [...leadsVisible]
+      .sort((a,b) => a.topic.localeCompare(b.topic))
+      .forEach(l => {
+        const card = document.createElement('div');
+        card.className = 'card lead';
+        card.innerHTML = `
+          <a class="card-link" href="${leadFormUrl(l.id)}" target="_blank" title="Open in D365">${LINK_SVG}</a>
+          <div class="card-topic">${l.topic}</div>
+          <div class="card-customer">${l.customer}</div>
+          <div class="card-footer">
+            <span class="card-owner">${firstName(l.ownerName)}</span>
+          </div>`;
+        leadsArea.appendChild(card);
+      });
+  }
+
+  // ── Pipeline columns ──
+  STAGES.forEach(stage => {
+    const allInStage = ownerPool.filter(o => o.stage === stage.key);
+    const visibleOpps = sortOpps(allInStage.filter(o => passesSmartFilters(o) && passesSearch(o) && passesSourceFilter(o)));
+    const hiddenCount  = allInStage.length - visibleOpps.length;
+
+    const visibleEst = visibleOpps.reduce((s,o) => s + o.revenue, 0);
+    const visibleWtd = Math.round(visibleOpps.reduce((s,o) => s + o.revenue * o.prob / 100, 0));
+
+    const col = document.createElement('div');
+    col.className = 'column';
+    col.innerHTML = `
+      <div class="col-header">
+        <div class="col-name">${stage.label}</div>
+        <div class="col-stats">
+          <span class="hi">${fmt(visibleEst)}</span>
+          &nbsp;(${fmt(visibleWtd)} weighted) · ${visibleOpps.length} deal${visibleOpps.length!==1?'s':''}
+          ${hiddenCount > 0 ? `<span style="color:#a19f9d"> · ${hiddenCount} filtered</span>` : ''}
+        </div>
+      </div>
+      <div class="col-cards" id="c-${stage.key}"></div>`;
+    board.appendChild(col);
+
+    const area = document.getElementById('c-' + stage.key);
+    if (!visibleOpps.length) {
+      area.innerHTML = `<div class="empty-col">${allInStage.length ? 'No cards match current filters' : 'No opportunities'}</div>`;
+      return;
+    }
+
+    visibleOpps.forEach(o => {
+      const h = heat(o.prob);
+      const d = daysUntil(o.closeDate);
+      let dLabel = '', dClass = 'card-days';
+      if (d !== null) {
+        if (d < 0)        { dLabel = Math.abs(d)+'d ago'; dClass += ' overdue'; }
+        else if (d <= 30) { dLabel = d+'d';                dClass += ' soon'; }
+        else              { dLabel = d+'d'; }
+      }
+
+      const card = document.createElement('div');
+      card.className = 'card ' + h;
+      card.innerHTML = `
+        <a class="card-link" href="${oppFormUrl(o.id)}" target="_blank" title="Open in D365">${LINK_SVG}</a>
+        <div class="card-topic">${o.topic}</div>
+        <div class="card-customer">${o.customer}</div>
+        <div class="card-footer">
+          <span class="card-value">${fmt(o.revenue)}</span>
+          <div class="card-right">
+            <span class="prob-badge">${o.prob}%</span>
+            <span class="card-owner">${firstName(o.ownerName)}</span>
+            ${dLabel ? `<span class="${dClass}">${dLabel}</span>` : ''}
+          </div>
+        </div>`;
+      area.appendChild(card);
+    });
+  });
+
+  // ── Won column ──
+  const wonVisible = wonFiltered.filter(o => passesSearch(o) && passesSourceFilter(o));
+  const totalWon = wonVisible.reduce((s,o) => s + o.actualValue, 0);
+  const wonCol = document.createElement('div');
+  wonCol.className = 'column won-col';
+  wonCol.innerHTML = `
+    <div class="col-header">
+      <div class="col-name">✓ Won (last 30 days)</div>
+      <div class="col-stats">
+        <span class="hi">${fmt(totalWon)}</span>
+        &nbsp;· ${wonVisible.length} deal${wonVisible.length!==1?'s':''}
+        ${wonVisible.length < wonFiltered.length ? `<span style="color:#a19f9d"> · ${wonFiltered.length - wonVisible.length} filtered</span>` : ''}
+      </div>
+    </div>
+    <div class="col-cards" id="c-won"></div>`;
+  board.appendChild(wonCol);
+
+  const wonArea = document.getElementById('c-won');
+  if (!wonVisible.length) {
+    wonArea.innerHTML = '<div class="empty-col">No won deals in last 30 days</div>';
+  } else {
+    [...wonVisible].sort((a,b) => new Date(b.closeDate) - new Date(a.closeDate)).forEach(o => {
+      const card = document.createElement('div');
+      card.className = 'card won';
+      card.innerHTML = `
+        <a class="card-link" href="${oppFormUrl(o.id)}" target="_blank" title="Open in D365">${LINK_SVG}</a>
+        <div class="card-topic">${o.topic}</div>
+        <div class="card-customer">${o.customer}</div>
+        <div class="card-footer">
+          <span class="card-value">${fmt(o.actualValue)}</span>
+          <div class="card-right">
+            <span class="date-badge">${fmtDate(o.closeDate)}</span>
+            <span class="card-owner">${firstName(o.ownerName)}</span>
+          </div>
+        </div>`;
+      wonArea.appendChild(card);
+    });
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+function showError(msg) {
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('errorMsg').textContent = msg;
+  document.getElementById('errorBox').style.display = 'block';
+}
+
+async function init() {
+  document.getElementById('refreshBtn').addEventListener('click', () => {
+    document.getElementById('board').style.display        = 'none';
+    document.getElementById('loadingState').style.display = 'flex';
+    document.getElementById('errorBox').style.display     = 'none';
+    init();
+  });
+
+  try {
+    const { openData, wonData, leadData } = await loadData();
+    ALL_OPEN  = openData;
+    ALL_WON   = wonData;
+    ALL_LEADS = leadData;
+
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('board').style.display        = 'grid';
+
+    buildOwnerFilters();
+    renderBoard();
+  } catch(err) {
+    console.error('Kanban load error:', err);
+    showError(err.message || 'Unknown error — check browser console.');
+  }
+}
+
+init();
+</script>
+
+</body></html>
