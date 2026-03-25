@@ -163,4 +163,4 @@ Because the board calls `/api/data/v9.2/...`, which only resolves inside a D365 
 
 ## License
 
-Internal tool — Bofor Oy. Not for redistribution.
+THIS IS A WORKING SAMPLE FOR ANYONE TO USE, SHARE OR MODIFY
