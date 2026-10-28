@@ -1,0 +1,1849 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bofor Oy – account form through the CRM versions</title>
+<style>
+:root{
+  color-scheme: light dark;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --strip-bg:#ffffff; --strip-text:#1b1f24; --strip-muted:#5f6b7a; --strip-line:#d9dee5; --strip-on-bg:#1b1f24; --strip-on-text:#ffffff;
+  --w2k-desk:#3a6ea5;
+  --xp-top:#3a7bd5; --xp-mid:#9cc4f0; --xp-hill:#5f9e35; --xp-low:#3f7a1f;
+  --vista-a:#0b2f3a; --vista-b:#16676a; --vista-c:#3a9bd1;
+  --w7-a:#0d4a8c; --w7-b:#3d9be0; --w7-c:#9fd2f5;
+  --w11-a:#dfe7fb; --w11-b:#efe6f8; --w11-c:#d6ecf7; --w8-a:#0a4f8a; --w8-b:#1e88d0; --w8-c:#5cc0ee; --w10-a:#0b2350; --w10-b:#1565c0;
+  --desk-text:#ffffff; --shade:rgba(0,0,0,.35); --veil:rgba(0,0,0,.12);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --strip-bg:#15181d; --strip-text:#e8ebef; --strip-muted:#9aa4b1; --strip-line:#2b313a; --strip-on-bg:#e8ebef; --strip-on-text:#15181d;
+    --w2k-desk:#1f3d5e; --xp-top:#0b1c3d; --xp-mid:#1f3f73; --xp-hill:#1e3d16; --xp-low:#10240b;
+    --vista-a:#03141a; --vista-b:#0b3a3c; --vista-c:#174f6e; --w7-a:#061e3a; --w7-b:#123f6b; --w7-c:#1f5a86;
+    --w11-a:#1b2035; --w11-b:#2a2340; --w11-c:#14303d; --w8-a:#062a4a; --w8-b:#0d4a78; --w8-c:#1d6d96; --w10-a:#050f22; --w10-b:#0b3570; --shade:rgba(0,0,0,.6); --veil:rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --strip-bg:#15181d; --strip-text:#e8ebef; --strip-muted:#9aa4b1; --strip-line:#2b313a; --strip-on-bg:#e8ebef; --strip-on-text:#15181d;
+  --w2k-desk:#1f3d5e; --xp-top:#0b1c3d; --xp-mid:#1f3f73; --xp-hill:#1e3d16; --xp-low:#10240b;
+  --vista-a:#03141a; --vista-b:#0b3a3c; --vista-c:#174f6e; --w7-a:#061e3a; --w7-b:#123f6b; --w7-c:#1f5a86;
+  --w11-a:#1b2035; --w11-b:#2a2340; --w11-c:#14303d; --w8-a:#062a4a; --w8-b:#0d4a78; --w8-c:#1d6d96; --w10-a:#050f22; --w10-b:#0b3570; --shade:rgba(0,0,0,.6); --veil:rgba(0,0,0,.35);
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{height:100%;margin:0;display:flex;flex-direction:column;overflow:hidden;background:var(--strip-bg);font:11px/1.35 Tahoma,Verdana,"Segoe UI",sans-serif}
+button{font:inherit;color:inherit}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible,a:focus-visible{outline:1px dotted #000;outline-offset:-2px}
+
+/* ---------- version strip ---------- */
+.strip{flex:none;display:flex;align-items:center;gap:14px;padding:8px 14px;background:var(--strip-bg);color:var(--strip-text);border-bottom:1px solid var(--strip-line);font:13px/1.2 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.strip .who{display:flex;align-items:center;gap:8px;font-weight:600;white-space:nowrap}
+.strip .who small{display:block;font-weight:400;color:var(--strip-muted);font-size:11px}
+.vers{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin-left:auto}
+.vers::-webkit-scrollbar{display:none}
+.vers button{flex:none;display:flex;flex-direction:column;align-items:center;min-width:64px;padding:5px 12px;border:1px solid var(--strip-line);border-radius:8px;background:none;color:var(--strip-text);cursor:pointer;font:600 14px/1.1 system-ui,-apple-system,"Segoe UI",sans-serif}
+.vers button small{font-weight:400;font-size:11px;color:var(--strip-muted)}
+.vers button:hover{border-color:var(--strip-muted)}
+.vers button[aria-current="true"]{background:var(--strip-on-bg);border-color:var(--strip-on-bg);color:var(--strip-on-text)}
+.vers button[aria-current="true"] small{color:inherit;opacity:.75}
+.vers button:focus-visible{outline:2px solid var(--strip-text);outline-offset:2px}
+
+/* ---------- stage + desktops ---------- */
+.stage{flex:1;min-height:0;display:flex;flex-direction:column;position:relative;overflow:hidden}
+.scene{flex:1;min-height:0;display:flex;flex-direction:column}
+.os-w2k{background:var(--w2k-desk)}
+.os-xp{background:radial-gradient(120% 60% at 30% 100%,var(--xp-hill) 0 55%,transparent 56%),radial-gradient(110% 55% at 85% 105%,var(--xp-low) 0 50%,transparent 51%),linear-gradient(180deg,var(--xp-top),var(--xp-mid) 70%)}
+.os-vista{background:radial-gradient(80% 40% at 70% 40%,var(--vista-c),transparent 70%),radial-gradient(70% 50% at 20% 70%,var(--vista-b),transparent 70%),var(--vista-a)}
+.os-win7{background:radial-gradient(60% 50% at 60% 45%,var(--w7-c),transparent 70%),linear-gradient(160deg,var(--w7-a),var(--w7-b))}
+.os-win11{background:radial-gradient(70% 60% at 25% 30%,var(--w11-c),transparent 70%),linear-gradient(135deg,var(--w11-a),var(--w11-b))}
+.desktop{flex:1;min-height:0;position:relative;display:flex;padding:14px 18px}
+.desk-icon{position:absolute;left:14px;top:14px;width:84px;display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:1px solid transparent;padding:4px;cursor:pointer;color:var(--desk-text);text-shadow:1px 1px 2px #000;text-align:center}
+.os-win11 .desk-icon{font:12px "Segoe UI",system-ui,sans-serif;color:var(--strip-text);text-shadow:none}
+.desk-icon:hover{border:1px dotted currentColor}
+
+/* ---------- window frames ---------- */
+.window{position:relative;z-index:1;color-scheme:light;color:#000;margin:auto;width:100%;max-width:1080px;height:100%;max-height:760px;display:flex;flex-direction:column;overflow:hidden}
+.window.max{max-width:none;max-height:none;border-radius:0!important}
+.titlebar{flex:none;display:flex;align-items:center;gap:6px;user-select:none}
+.titlebar .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.titlebar .ticon{width:16px;height:16px;flex:none}
+.wbtn{flex:none;display:grid;place-items:center;padding:0;cursor:pointer}
+.wbtn svg{width:10px;height:10px}
+
+.os-w2k .window{background:#d4d0c8;border:2px solid;border-color:#fff #404040 #404040 #fff;box-shadow:1px 1px 0 #000,4px 6px 16px var(--shade);padding:2px}
+.os-w2k .titlebar{height:20px;padding:0 2px 0 4px;gap:4px;background:linear-gradient(90deg,#0a246a,#a6caf0);color:#fff;font:bold 11px Tahoma,sans-serif}
+.os-w2k .wbtn{width:16px;height:14px;background:#d4d0c8;border:1px solid;border-color:#fff #404040 #404040 #fff;color:#000}
+.os-w2k .wbtn.x{margin-left:2px}
+
+.os-xp .window{background:#ece9d8;border:1px solid #0831d9;border-radius:8px 8px 0 0;box-shadow:3px 5px 22px var(--shade)}
+.os-xp .titlebar{height:28px;padding:0 4px 0 7px;background:linear-gradient(180deg,#3d95ff 0%,#0058ee 10%,#0058ee 50%,#0066ff 88%,#003dd7 100%);color:#fff;font:bold 13px "Trebuchet MS",Tahoma,sans-serif;text-shadow:1px 1px #0a1883}
+.os-xp .wbtn{width:21px;height:21px;border:1px solid #fff;border-radius:3px;background:linear-gradient(#6aa5ff,#2463e6);color:#fff}
+.os-xp .wbtn.x{background:linear-gradient(#f0947c,#c4341b)}
+
+.os-vista .window{background:#e9eef4;border:1px solid #1b2a3a;border-radius:8px 8px 0 0;box-shadow:0 6px 28px var(--shade)}
+.os-vista .titlebar{height:30px;padding:0 6px 0 8px;background:linear-gradient(#71869c,#40556c 48%,#2b3c50 52%,#3a4f66);color:#fff;font:12px "Segoe UI",Tahoma,sans-serif;text-shadow:0 0 6px #000}
+.os-vista .wbtn{width:26px;height:18px;border:1px solid #1e2b38;border-radius:3px;background:linear-gradient(#90a4ba,#4c6077 48%,#3a4d63 52%,#566b81);color:#fff}
+.os-vista .wbtn.x{width:44px;background:linear-gradient(#eaa694,#c8432d 48%,#b62f19 52%,#d4624a)}
+
+.os-win7 .window{background:#dfe9f5;border:1px solid #6d8db5;border-radius:7px 7px 0 0;box-shadow:0 6px 28px var(--shade)}
+.os-win7 .titlebar{height:30px;padding:0 6px 0 8px;background:linear-gradient(#dbe8f6,#bdd4ee 48%,#aecbea 52%,#c6dbf1);color:#1e3550;font:12px "Segoe UI",Tahoma,sans-serif}
+.os-win7 .wbtn{width:26px;height:18px;border:1px solid #6d8db5;border-radius:3px;background:linear-gradient(#f2f6fb,#d2e0f1 48%,#c2d5ec 52%,#dbe7f5);color:#2c4766}
+.os-win7 .wbtn.x{width:44px;border-color:#8a2d1d;background:linear-gradient(#eaa694,#c8432d 48%,#b62f19 52%,#d4624a);color:#fff}
+
+.os-win11 .window{background:#f3f3f3;border:1px solid #c9c9c9;border-radius:8px;box-shadow:0 8px 32px var(--shade)}
+.os-win11 .titlebar{height:38px;padding:0 0 0 8px;background:#e6e9ee;color:#1b1b1b;font:12px "Segoe UI",system-ui,sans-serif;align-items:flex-end;gap:0}
+.os-win11 .btab{display:flex;align-items:center;gap:8px;height:32px;padding:0 14px;max-width:280px;min-width:0;background:#f7f7f7;border-radius:8px 8px 0 0;white-space:nowrap}
+.os-win11 .btab span{overflow:hidden;text-overflow:ellipsis}
+.os-win11 .wbtn{width:44px;height:38px;border:none;background:none;color:#1b1b1b;align-self:stretch}
+.os-win11 .wbtn:hover{background:#d6dbe2}
+.os-win11 .wbtn.x:hover{background:#c42b1c;color:#fff}
+.os-win11 .addr{flex:none;display:flex;align-items:center;gap:8px;height:34px;padding:0 10px;background:#f7f7f7;border-bottom:1px solid #dcdcdc;font:12px "Segoe UI",system-ui,sans-serif;color:#444}
+.os-win11 .addr svg{width:14px;height:14px;flex:none}
+.os-win11 .addr div{flex:1;min-width:0;height:24px;display:flex;align-items:center;padding:0 12px;border-radius:12px;background:#ececec;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ---------- taskbars ---------- */
+.taskbar{flex:none;display:flex;align-items:center;gap:6px;user-select:none}
+.task{min-width:0;display:flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap;overflow:hidden}
+.task span{overflow:hidden;text-overflow:ellipsis}
+.task svg{width:14px;height:14px;flex:none}
+.tray{margin-left:auto;height:100%;display:flex;align-items:center;padding:0 12px}
+.os-w2k .taskbar{height:30px;padding:2px;background:#d4d0c8;border-top:1px solid #fff}
+.os-w2k .start,.os-w2k .task{height:24px;padding:0 8px;background:#d4d0c8;border:1px solid;border-color:#fff #404040 #404040 #fff;color:#000;font:bold 11px Tahoma,sans-serif}
+.os-w2k .task{font-weight:normal;max-width:220px}
+.os-w2k .task.on{border-color:#404040 #fff #fff #404040;background:#e8e6e1}
+.os-w2k .tray{height:24px;border:1px solid;border-color:#808080 #fff #fff #808080;color:#000}
+.os-xp .taskbar{height:30px;background:linear-gradient(#3c81f3,#245edb 12%,#245edb 85%,#1941a5);color:#fff}
+.os-xp .start{height:100%;padding:0 18px 0 12px;border:none;border-radius:0 12px 12px 0;background:linear-gradient(#64c464,#4cb14c 20%,#2f8a2f);font:bold italic 15px "Trebuchet MS",Tahoma,sans-serif;text-shadow:1px 1px 1px #1a4d1a;color:#fff;cursor:pointer}
+.os-xp .task{max-width:240px;height:24px;padding:0 8px;border:1px solid #1941a5;border-radius:3px;background:#3c81f3;color:#fff}
+.os-xp .task.on{background:#1e52b7;box-shadow:inset 1px 1px 2px rgba(0,0,0,.45)}
+.os-xp .tray{background:#0f8de6;border-left:1px solid #0a5fb0;color:#fff}
+.orb{width:32px;height:32px;margin:0 6px;border-radius:50%;border:1px solid #0b1a33;background:radial-gradient(circle at 50% 30%,#d6ecff,#4a90e2 45%,#123d82 80%);cursor:pointer;box-shadow:0 0 8px rgba(120,180,255,.6)}
+.os-vista .taskbar{height:36px;background:linear-gradient(rgba(70,84,102,.95),rgba(12,16,22,.97));color:#fff;font:12px "Segoe UI",Tahoma,sans-serif}
+.os-win7 .taskbar{height:38px;background:linear-gradient(rgba(60,100,150,.85),rgba(20,45,80,.92));color:#fff;font:12px "Segoe UI",Tahoma,sans-serif}
+.os-vista .task,.os-win7 .task{max-width:240px;height:28px;padding:0 10px;border:1px solid rgba(255,255,255,.25);border-radius:3px;background:rgba(255,255,255,.08);color:#fff}
+.os-vista .task.on,.os-win7 .task.on{background:rgba(255,255,255,.22)}
+.os-win11 .taskbar{height:46px;justify-content:center;position:relative;background:rgba(243,243,243,.88);border-top:1px solid #d0d0d0;color:#1b1b1b;font:12px "Segoe UI",system-ui,sans-serif}
+.os-win11 .tbtile{width:40px;height:40px;border:none;border-radius:6px;background:none;display:grid;place-items:center;cursor:pointer}
+.os-win11 .tbtile:hover,.os-win11 .task.on{background:rgba(0,0,0,.06)}
+.os-win11 .tbtile svg{width:20px;height:20px}
+.os-win11 .task{justify-content:center;position:relative}
+.os-win11 .task span{display:none}
+.os-win11 .task.on::after{content:"";position:absolute;bottom:2px;left:14px;right:14px;height:3px;border-radius:2px;background:#0f6cbd}
+.os-win11 .tray{position:absolute;right:0;top:0}
+
+/* ---------- dialogs ---------- */
+.veil{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:var(--veil);padding:12px}
+.veil[hidden]{display:none}
+.dlg{color-scheme:light;color:#000;width:min(390px,100%);display:flex;flex-direction:column;max-height:100%;overflow:hidden;background:#ece9d8;box-shadow:3px 5px 22px var(--shade)}
+.dlg.big{width:min(520px,100%)}
+.dlg .db{padding:14px;display:flex;gap:12px;align-items:flex-start;overflow:auto}
+.dlg .db svg.ic{width:32px;height:32px;flex:none}
+#msgText{white-space:pre-line}
+.dlg .df{display:flex;justify-content:flex-end;gap:6px;padding:0 12px 12px}
+.btn{min-width:75px;padding:3px 10px;border:1px solid #003c74;border-radius:3px;background:linear-gradient(#fff,#ece9d8);cursor:pointer;color:#000}
+.btn:hover{box-shadow:inset 0 0 0 1px #f8b330}
+.btn[hidden]{display:none}
+.os-w2k .dlg{background:#d4d0c8;border:2px solid;border-color:#fff #404040 #404040 #fff}
+.os-w2k .dlg .btn{border-radius:0;background:#d4d0c8;border-color:#fff #404040 #404040 #fff}
+.os-xp .dlg{border:1px solid #0831d9;border-radius:8px 8px 0 0}
+.os-vista .dlg,.os-win7 .dlg{background:#f0f0f0;border-radius:8px 8px 0 0;border:1px solid #556}
+.os-vista .dlg .btn,.os-win7 .dlg .btn{border-color:#707070;background:linear-gradient(#f2f2f2,#ebebeb 50%,#dddddd 51%,#cfcfcf)}
+.os-win11 .dlg{background:#fff;border-radius:8px;border:1px solid #d1d1d1;font:13px "Segoe UI",system-ui,sans-serif}
+.os-win11 .dlg .titlebar{height:auto;padding:18px 20px 0;background:none;color:#242424;font:600 18px "Segoe UI",system-ui,sans-serif;text-shadow:none}
+.os-win11 .dlg .titlebar .ticon{display:none}
+.os-win11 .dlg .db{padding:12px 20px 18px}
+.os-win11 .dlg .df{padding:0 20px 18px}
+.os-win11 .dlg .btn{border-radius:4px;border:1px solid #d1d1d1;background:#fff;padding:6px 14px;font:600 13px "Segoe UI",system-ui,sans-serif}
+.os-win11 .dlg .btn:first-child{background:#0f6cbd;border-color:#0f6cbd;color:#fff}
+.lkbody{flex-direction:column;align-items:stretch!important;gap:0!important}
+.lkrow{display:grid;grid-template-columns:62px 1fr auto;gap:6px;align-items:center;margin-bottom:8px}
+.lkrow input{font:inherit;height:22px;border:1px solid #7f9db9;padding:2px 4px;width:100%}
+.lklist{border:1px solid #7f9db9;background:#fff;height:170px;overflow:auto}
+.lklist table{width:100%;border-collapse:collapse}
+.lklist th{text-align:left;font-weight:normal;padding:3px 6px;background:linear-gradient(#fff,#e2e9f4);border-bottom:1px solid #a5bfe1;position:sticky;top:0}
+.lklist td{padding:3px 6px;border-bottom:1px solid #eef2f8}
+.lklist td:first-child,.lklist th:first-child{width:24px;text-align:center}
+.lklist tr[data-lkrow]{cursor:default}
+.lklist tr[data-lkrow]:hover{background:#e6f0ff}
+.lklist input{width:auto;height:auto}
+
+/* ================= CLASSIC FAMILY (1.0 / 1.2 / 3.0 / 4.0) ================= */
+.v10{--head-a:#35568e;--head-b:#1d3866;--head-text:#ffffff;--head-sub:#c9d6ee;--bar-a:#f1efe6;--bar-b:#dcd8c8;--bar-line:#a8a596;--hot:#c7d6ef;--hot-line:#33548c;--nav-bg:#e4e7ee;--nav-group:#1d3866;--nav-sel:#ffffff;--form-bg:#eef0f4;--line:#a9b4c6;--tab-off:#dde2ea;--hdr:#1d3866;--sb:#d4d0c8}
+.v12{--head-a:#e4edf9;--head-b:#c3d6f1;--head-text:#15428b;--head-sub:#555555;--bar-a:#fbfcfe;--bar-b:#d4e2f6;--bar-line:#99b4d9;--hot:#ffe9a8;--hot-line:#e8b54a;--nav-bg:#d7e4f7;--nav-group:#15428b;--nav-sel:#ffffff;--form-bg:#e9f0fb;--line:#a5bfe1;--tab-off:#d5e2f5;--hdr:#15428b;--sb:#ece9d8}
+.v30{--head-a:#e3edfc;--head-b:#a8c4ee;--head-text:#0b3d91;--head-sub:#3a5a8c;--bar-a:#fafcff;--bar-b:#c4d9f7;--bar-line:#7d9fd3;--hot:#ffe49c;--hot-line:#e0a234;--nav-bg:#e3eefc;--nav-group:#0b3d91;--nav-sel:#ffd88c;--form-bg:#eaf2fd;--line:#90b0de;--tab-off:#d6e5fa;--hdr:#0b3d91;--sb:#ece9d8}
+.v40{--head-a:#f6f9fc;--head-b:#dae4f0;--head-text:#1e395b;--head-sub:#5a6f88;--bar-a:#fbfcfe;--bar-b:#e1e9f3;--bar-line:#b7c7db;--hot:#fdeeb3;--hot-line:#e6c35c;--nav-bg:#eef3f9;--nav-group:#1e395b;--nav-sel:#ffffff;--form-bg:#f3f6fa;--line:#c3d1e2;--tab-off:#e4ebf3;--hdr:#1e395b;--sb:#e9eef4}
+.classic{font:11px/1.35 Tahoma,Verdana,"Segoe UI",Geneva,sans-serif}
+.classic .crmhead{flex:none;display:flex;align-items:center;gap:10px;padding:6px 12px;background:linear-gradient(var(--head-a),var(--head-b));border-bottom:1px solid var(--bar-line)}
+.classic .crmhead .ent{font-size:10px;color:var(--head-sub)}
+.classic .crmhead .rec{font:bold 16px/1.2 Tahoma,Verdana,sans-serif;color:var(--head-text)}
+.classic .crmhead .brand{margin-left:auto;text-align:right;color:var(--head-text);font-size:10px;line-height:1.1}
+.classic .crmhead .brand b{display:block;font:bold italic 18px/1 "Trebuchet MS",Tahoma,sans-serif;letter-spacing:-.5px}
+.v40 .crmhead .brand b{font-style:normal;font-family:"Segoe UI",Tahoma,sans-serif;font-weight:600}
+.menubar{flex:none;display:flex;gap:1px;padding:2px 4px;background:linear-gradient(var(--bar-a),var(--bar-b));border-bottom:1px solid var(--bar-line);position:relative;z-index:5}
+.menu{position:relative}
+.menu>button{background:none;border:1px solid transparent;padding:2px 8px;cursor:pointer}
+.menu>button:hover,.menu.open>button{background:var(--hot);border-color:var(--hot-line)}
+.dropdown{position:absolute;left:0;top:100%;z-index:20;min-width:180px;background:#fff;border:1px solid #7a96c5;box-shadow:2px 2px 4px rgba(0,0,0,.3);padding:2px;display:none}
+.menu.open .dropdown{display:block}
+.dropdown button{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:1px solid transparent;padding:3px 18px;cursor:pointer;white-space:nowrap}
+.dropdown button:hover,.dropdown button:focus-visible{background:#c8daf6;border-color:#7a96c5;outline:none}
+.dropdown hr{border:0;border-top:1px solid #c3d1e2;margin:2px 4px}
+.toolbar{flex:none;display:flex;align-items:center;gap:2px;padding:3px 6px;background:linear-gradient(var(--bar-a),var(--bar-b));border-bottom:1px solid var(--bar-line);overflow-x:auto;white-space:nowrap}
+.tb{display:inline-flex;align-items:center;gap:4px;background:none;border:1px solid transparent;padding:2px 6px;cursor:pointer;white-space:nowrap}
+.tb:hover{background:var(--hot);border-color:var(--hot-line)}
+.tb svg{width:16px;height:16px;flex:none}
+.sep{width:1px;align-self:stretch;margin:2px 4px;background:var(--bar-line);box-shadow:1px 0 #fff}
+.classic .body{flex:1;min-height:0;display:flex}
+.classic .leftnav{flex:none;width:172px;background:var(--nav-bg);border-right:1px solid var(--line);overflow:auto;padding:4px 0 10px}
+.classic .leftnav h3{margin:9px 8px 3px;font:bold 11px Tahoma,Verdana,sans-serif;color:var(--nav-group);border-bottom:1px solid var(--line);padding-bottom:2px}
+.v30 .leftnav h3{margin:8px 0 3px;padding:3px 8px;border:none;border-top:1px solid #fff;border-bottom:1px solid var(--line);background:linear-gradient(#fdfeff,#c6daf6)}
+.classic .leftnav button{display:flex;align-items:center;gap:6px;width:calc(100% - 8px);margin:0 4px;padding:3px 6px;border:1px solid transparent;background:none;text-align:left;cursor:pointer}
+.classic .leftnav button:hover{background:var(--hot);border-color:var(--hot-line)}
+.classic .leftnav button[aria-current="page"]{background:var(--nav-sel);border-color:var(--line);font-weight:bold}
+.v30 .leftnav button[aria-current="page"]{border-color:#c8891d}
+.v40 .leftnav button{border-radius:3px}
+.v10 .leftnav{padding-top:8px}
+.leftnav svg{width:16px;height:16px;flex:none}
+.classic .content{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--form-bg)}
+.classic .tabs{flex:none;display:flex;gap:2px;padding:8px 10px 0;overflow-x:auto}
+.classic .tab{flex:none;padding:4px 14px;border:1px solid var(--line);border-bottom:none;background:var(--tab-off);cursor:pointer;border-radius:3px 3px 0 0;position:relative;top:1px}
+.classic .tab[aria-selected="true"]{background:#fff;font-weight:bold;z-index:1}
+.v10 .tab{border-radius:0}
+.classic .panel{flex:1;overflow:auto;background:#fff;margin:0 10px 10px;border:1px solid var(--line);padding:6px 14px 14px}
+.classic .sec h4{margin:10px 0 6px;font:bold 11px Tahoma,Verdana,sans-serif;color:var(--hdr);border-bottom:1px solid var(--line);padding-bottom:2px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:4px 18px}
+.fr{display:grid;grid-template-columns:118px minmax(0,1fr);gap:8px;align-items:center;min-width:0}
+.fr.full{grid-column:1 / -1}
+.fr>label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fr>label.r{color:#c00000}.fr>label.b{color:#0033cc}
+.mk{margin-left:3px;font-weight:bold}.mk.r{color:#c00000}.mk.b{color:#0033cc}
+.fc{min-width:0}
+.classic input,.classic select,.classic textarea,.ribbon input,.ribbon select,.ribbon textarea{font:inherit;color:#000;background:#fff;border:1px solid #7f9db9;padding:2px 4px;width:100%;height:20px;border-radius:0}
+.classic textarea,.ribbon textarea{height:auto;resize:vertical}
+.v40 input,.v40 select,.v40 textarea{border-color:#a8b8cc}
+.window :disabled{background:#f3f3f3;color:#666}
+.radios{display:flex;gap:12px;flex-wrap:wrap}
+.radios label{display:inline-flex;gap:3px;align-items:center}
+.radios input{width:auto!important;height:auto!important}
+.lookup{display:flex;min-width:0}
+.lookup .lkval{flex:1;min-width:0;height:20px;border:1px solid #7f9db9;border-right:none;background:#f3f3f3;padding:2px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:text}
+.lookup .lkval a,.window a{color:#0033cc}
+.lookup button{flex:none;width:22px;height:20px;border:1px solid #7f9db9;background:linear-gradient(#fff,#dde6f3);cursor:pointer;padding:0;display:grid;place-items:center}
+.lookup button svg{width:13px;height:13px}
+.ro{color:#555}
+.note{border:1px solid var(--line,#c3d1e2);margin:8px 0;background:#fff}
+.note .nh{background:linear-gradient(#fff,#e2e9f4);padding:3px 6px;color:#555;border-bottom:1px solid var(--line,#c3d1e2)}
+.note .nb{padding:6px;white-space:pre-wrap}
+.newnote{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.newnote .btn{align-self:flex-start}
+.fa{flex:none;width:200px;display:flex;flex-direction:column;background:var(--nav-bg);border-left:1px solid var(--line)}
+.fa.shut{width:26px}
+.fa .fah{display:flex;align-items:center;gap:6px;padding:4px 6px;background:linear-gradient(var(--bar-a),var(--bar-b));border-bottom:1px solid var(--line);font-weight:bold;color:var(--hdr);white-space:nowrap;overflow:hidden}
+.fa .fah button{border:1px solid var(--line);background:#fff;width:16px;height:16px;padding:0;line-height:12px;cursor:pointer;flex:none}
+.fa.shut .fah span{display:none}
+.fa .fab{padding:8px;overflow:auto}
+.fa .fat{font-weight:bold;margin-bottom:6px}
+.fa .fasub{color:#555;margin:6px 0 4px;border-bottom:1px solid var(--line)}
+.fa .fab button{display:block;width:100%;text-align:left;border:1px solid transparent;background:none;padding:2px 4px;color:#0033cc;cursor:pointer}
+.fa .fab button:hover{background:var(--hot);border-color:var(--hot-line)}
+.statusbar{flex:none;display:flex;gap:2px;padding:2px;background:var(--sb);border-top:1px solid #fff}
+.statusbar>div{border:1px solid;border-color:#a6a49b #fff #fff #a6a49b;padding:1px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.statusbar .msg{flex:1}
+.statusbar .zone{display:flex;align-items:center;gap:4px}
+.statusbar svg{width:14px;height:14px}
+
+/* grids (classic + 2011) */
+.gview{flex:1;min-height:0;display:flex;flex-direction:column}
+.ghead{flex:none;padding:8px 12px 4px;font-weight:bold;font-size:14px;color:var(--hdr,#1e395b)}
+.gtool{flex:none;display:flex;align-items:center;gap:2px;margin:0 10px;padding:3px 4px;background:linear-gradient(var(--bar-a,#fbfcfe),var(--bar-b,#e1e9f3));border:1px solid var(--line,#c3d1e2);border-bottom:none;overflow-x:auto;white-space:nowrap}
+.gtool .spacer{flex:1}
+.gtool select{width:auto;height:18px}
+.gwrap{flex:1;min-height:0;overflow:auto;margin:0 10px;background:#fff;border:1px solid var(--line,#c3d1e2)}
+table.grid{border-collapse:collapse;width:100%;min-width:520px}
+.grid th{position:sticky;top:0;text-align:left;font-weight:normal;padding:3px 6px;background:linear-gradient(#fff,#e2e9f4);border-bottom:1px solid var(--line,#c3d1e2);border-right:1px solid #d3deee;white-space:nowrap}
+.grid td{padding:3px 6px;border-bottom:1px solid #eef2f8;white-space:nowrap}
+.grid td:first-child,.grid th:first-child{width:22px;text-align:center}
+.grid input{width:auto!important;height:auto!important}
+.grid tbody tr[data-row]:hover{background:#e6f0ff}
+.grid tbody tr.sel{background:#c8daf6}
+.grid .empty td{text-align:left;color:#555;padding:10px;white-space:normal}
+.gfoot{flex:none;display:flex;align-items:center;gap:8px;margin:0 10px 10px;padding:3px 6px;background:linear-gradient(var(--bar-a,#fbfcfe),var(--bar-b,#e1e9f3));border:1px solid var(--line,#c3d1e2);border-top:none;overflow-x:auto;white-space:nowrap}
+.az{display:flex;gap:1px}
+.az button{background:none;border:1px solid transparent;padding:0 3px;color:#0033cc;cursor:pointer}
+.az button[aria-pressed="true"]{font-weight:bold;color:#000;border-color:var(--line,#c3d1e2);background:#fff}
+.gfoot .count{margin-left:auto;color:#555}
+
+/* ================= CRM 2011 (ribbon) ================= */
+.ribbon{font:11px/1.35 "Segoe UI",Tahoma,Verdana,sans-serif;--bar-a:#fbfcfe;--bar-b:#e3ebf5;--line:#c5d5ea;--hdr:#1f497d;--hot:#fde9a6;--hot-line:#e3c36a}
+.ribbon .rb{flex:none;background:linear-gradient(#fefefe,#e8eef6);border-bottom:1px solid #b3c6df;position:relative;z-index:5}
+.ribbon .rtabs{display:flex;align-items:flex-end;gap:2px;padding:4px 6px 0;background:linear-gradient(#dfe8f4,#cfdcee);border-bottom:1px solid #b3c6df}
+.ribbon .rtabs>button,.ribbon .rtabs .menu>button{border:1px solid transparent;border-bottom:none;background:none;padding:3px 12px;cursor:pointer;border-radius:3px 3px 0 0;position:relative;top:1px}
+.ribbon .rtabs>button[aria-selected="true"]{background:#fefefe;border-color:#b3c6df}
+.ribbon .rtabs .menu>button.rfile{background:linear-gradient(#3f86d3,#1d5ea8);color:#fff;font-weight:600;border-color:#174f8d}
+.ribbon .rtabs .menu.open>button.rfile{background:#174f8d}
+.ribbon .rgroups{display:flex;gap:0;padding:3px 4px 0;overflow-x:auto;min-height:86px}
+.rg{flex:none;display:flex;flex-direction:column;border-right:1px solid #d3deec;padding:0 6px}
+.rgc{flex:1;display:flex;gap:2px;align-items:flex-start}
+.rgcol{display:flex;flex-direction:column;gap:1px}
+.rgl{text-align:center;color:#4d6182;padding:2px 0 3px}
+.rbig{display:flex;flex-direction:column;align-items:center;gap:2px;width:58px;padding:3px 2px;border:1px solid transparent;border-radius:2px;background:none;cursor:pointer;text-align:center;line-height:1.15}
+.rbig svg{width:32px;height:32px}
+.rsm{display:flex;align-items:center;gap:4px;padding:1px 6px 1px 3px;border:1px solid transparent;border-radius:2px;background:none;cursor:pointer;white-space:nowrap}
+.rsm svg{width:16px;height:16px}
+.rbig:hover,.rsm:hover{background:linear-gradient(#fff6d6,#fde59e);border-color:#e3c36a}
+.ribbon .body{flex:1;min-height:0;display:flex}
+.ribbon .leftnav{flex:none;width:182px;background:linear-gradient(90deg,#f4f8fc,#e9f0f8);border-right:1px solid #c5d5ea;overflow:auto;padding:6px 0 10px}
+.ribbon .leftnav .fsel{margin:0 8px 6px;padding:3px 6px;border:1px solid #c5d5ea;background:#fff;font-weight:600;color:#1f497d}
+.ribbon .leftnav h3{margin:10px 8px 2px;font:600 11px "Segoe UI",Tahoma,sans-serif;color:#1f497d}
+.ribbon .leftnav h5{margin:6px 12px 1px;font:600 10px "Segoe UI",Tahoma,sans-serif;color:#6b7c93}
+.ribbon .leftnav button{display:flex;align-items:center;gap:6px;width:calc(100% - 12px);margin:0 6px;padding:2px 8px;border:1px solid transparent;background:none;text-align:left;cursor:pointer;color:#1e3a60;border-radius:2px}
+.ribbon .leftnav button:hover{background:#dde9f7;border-color:#b3c6df}
+.ribbon .leftnav button[aria-current="page"]{background:#fff;border-color:#9fb8d9;font-weight:600}
+.ribbon .content{flex:1;min-width:0;display:flex;flex-direction:column;background:#fff}
+.ribbon .fhead{flex:none;display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid #dde6f1;background:linear-gradient(#fff,#f2f6fb)}
+.ribbon .fhead .ent{font-size:10px;color:#6b7c93}
+.ribbon .fhead .rec{font:20px/1.15 "Segoe UI",Tahoma,sans-serif;color:#1f497d}
+.ribbon .fscroll{flex:1;overflow:auto;padding:4px 16px 16px}
+.tsec{margin-top:8px}
+.tsec>h2{display:flex;align-items:center;gap:6px;margin:6px 0;font:600 13px "Segoe UI",Tahoma,sans-serif;color:#1f497d}
+.tsec>h2 button{border:none;background:none;padding:0 2px;color:#1f497d;cursor:pointer;font-size:10px;transition:transform .15s}
+.tsec.shut>h2 button{transform:rotate(-90deg)}
+.tsec.shut>.tbody{display:none}
+.ribbon .sec h4{margin:8px 0 4px;font:600 11px "Segoe UI",Tahoma,sans-serif;color:#4d6182;border-bottom:1px solid #dde6f1;padding-bottom:2px}
+.ribbon .fr{grid-template-columns:128px minmax(0,1fr)}
+.ribbon input,.ribbon select,.ribbon textarea{border-color:#c5d5ea}
+.ribbon input:hover,.ribbon select:hover,.ribbon textarea:hover{border-color:#8fb0da}
+.ribbon .lookup .lkval,.ribbon .lookup button{border-color:#c5d5ea}
+.ribbon .lookup .lkval{background:#fff}
+.ribbon .statusbar{background:#e9eef5;border-top:1px solid #c5d5ea}
+.ribbon .statusbar>div{border:none}
+.subgrid{border:1px solid #c5d5ea;margin:4px 0}
+.subgrid table.grid{min-width:0}
+
+/* ================= DYNAMICS 365 ONLINE (Unified Interface, new look) ================= */
+.uci{font:13px/1.4 "Segoe UI",system-ui,-apple-system,sans-serif;color:#242424;background:#f5f5f5}
+.uci .appbar{flex:none;height:48px;display:flex;align-items:center;gap:10px;padding:0 10px;background:#0b2447;color:#fff}
+.uci .appbar button{border:none;background:none;color:#fff;cursor:pointer;display:grid;place-items:center;width:36px;height:36px;border-radius:4px}
+.uci .appbar button:hover{background:rgba(255,255,255,.12)}
+.uci .appbar svg{width:18px;height:18px}
+.uci .appname{font-weight:600;white-space:nowrap}
+.uci .appsub{opacity:.85;white-space:nowrap;padding-left:10px;border-left:1px solid rgba(255,255,255,.35)}
+.uci .gsearch{flex:1;max-width:420px;margin:0 auto;height:32px;display:flex;align-items:center;gap:8px;padding:0 10px;border-radius:4px;background:#fff;color:#616161}
+.uci .gsearch svg{width:14px;height:14px}
+.uci .appicons{display:flex;align-items:center;gap:2px}
+.uci .avatar{width:30px;height:30px;border-radius:50%;background:#c7e0f4;color:#0b2447;display:grid;place-items:center;font-size:12px;font-weight:600;margin-left:6px}
+.uci .obody{flex:1;min-height:0;display:flex}
+.uci .sitemap{flex:none;width:210px;background:#fff;border-right:1px solid #e0e0e0;overflow:auto;padding:8px 0}
+.uci .sitemap h6{margin:12px 16px 4px;font:600 12px "Segoe UI",system-ui,sans-serif;color:#424242}
+.uci .sitemap button{display:flex;align-items:center;gap:10px;width:calc(100% - 12px);margin:1px 6px;padding:6px 10px;border:none;border-radius:4px;background:none;text-align:left;cursor:pointer;color:#242424}
+.uci .sitemap button:hover{background:#f0f0f0}
+.uci .sitemap button[aria-current="page"]{background:#ebf3fc;font-weight:600;position:relative}
+.uci .sitemap button[aria-current="page"]::before{content:"";position:absolute;left:0;top:7px;bottom:7px;width:3px;border-radius:2px;background:#0f6cbd}
+.uci .sitemap svg{width:16px;height:16px;flex:none;color:#424242}
+.uci .omain{flex:1;min-width:0;display:flex;flex-direction:column}
+.uci .cmdbar{flex:none;display:flex;align-items:center;gap:2px;margin:8px 12px 0;padding:4px;background:#fff;border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.14),0 0 2px rgba(0,0,0,.12);overflow-x:auto;white-space:nowrap}
+.uci .cmd{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:none;border-radius:4px;background:none;cursor:pointer;color:#242424;white-space:nowrap}
+.uci .cmd:hover{background:#f0f0f0}
+.uci .cmd svg{width:16px;height:16px;color:#424242;flex:none}
+.uci .cmdsep{width:1px;height:20px;background:#e0e0e0;margin:0 4px;flex:none}
+.uci .oscroll{flex:1;overflow:auto;padding:12px}
+.uci .ohead{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:14px 16px;background:#fff;border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.14),0 0 2px rgba(0,0,0,.12)}
+.uci .oavatar{width:48px;height:48px;border-radius:6px;background:#5c2e91;color:#fff;display:grid;place-items:center;font-weight:600;font-size:18px;flex:none}
+.uci .oname{font:600 20px/1.25 "Segoe UI",system-ui,sans-serif}
+.uci .osaved{font-weight:400;font-size:14px;color:#616161}
+.uci .oform{color:#616161;font-size:12px}
+.uci .ohf{display:flex;gap:22px;margin-left:auto;flex-wrap:wrap}
+.uci .ohf div{min-width:0}
+.uci .hv{font-weight:600;white-space:nowrap}
+.uci .hv a{color:#0f6cbd;text-decoration:none}
+.uci .hl{font-size:12px;color:#616161;white-space:nowrap}
+.uci .otabs{display:flex;gap:4px;margin:10px 0 0;padding:0 4px;overflow-x:visible;position:relative;z-index:4;flex-wrap:wrap}
+.uci .otab{position:relative;padding:8px 12px;border:none;background:none;cursor:pointer;color:#424242;border-radius:4px}
+.uci .otab:hover{background:rgba(0,0,0,.05)}
+.uci .otab[aria-selected="true"]{color:#242424;font-weight:600}
+.uci .otab[aria-selected="true"]::after{content:"";position:absolute;left:12px;right:12px;bottom:2px;height:3px;border-radius:2px;background:#0f6cbd}
+.uci .menu .dropdown{border:none;border-radius:8px;box-shadow:0 8px 16px rgba(0,0,0,.14),0 0 2px rgba(0,0,0,.12);padding:4px;min-width:200px}
+.uci .menu .dropdown button{border:none;border-radius:4px;padding:7px 10px}
+.uci .menu .dropdown button:hover{background:#f0f0f0}
+.uci .menu.open>button{background:rgba(0,0,0,.05);border-color:transparent}
+.uci .ogrid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.2fr) minmax(0,.9fr);gap:12px;margin-top:10px;align-items:start}
+.uci .ogrid.two{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.uci .ocol{display:flex;flex-direction:column;gap:12px;min-width:0}
+.uci .card{background:#fff;border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.14),0 0 2px rgba(0,0,0,.12);padding:12px 16px 14px;min-width:0}
+.uci .card h3{display:flex;align-items:center;justify-content:space-between;margin:0 0 8px;font:600 14px "Segoe UI",system-ui,sans-serif}
+.uci .card h3 button{border:none;background:none;cursor:pointer;width:28px;height:28px;border-radius:4px;display:grid;place-items:center}
+.uci .card h3 button:hover{background:#f0f0f0}
+.uci .card h3 svg{width:16px;height:16px}
+.uci .fr{grid-template-columns:minmax(0,40%) minmax(0,1fr);gap:10px;padding:3px 0}
+.uci .fr>label{color:#424242}
+.uci .fr>label.r,.uci .fr>label.b{color:#424242}
+.uci input,.uci select,.uci textarea{font:inherit;color:#242424;width:100%;min-height:32px;padding:4px 10px;border:1px solid transparent;border-bottom-color:#d1d1d1;border-radius:4px;background:#f5f5f5}
+.uci input:hover,.uci select:hover,.uci textarea:hover{border-color:#c7c7c7;border-bottom-color:#616161}
+.uci input:focus,.uci select:focus,.uci textarea:focus{outline:none;background:#fff;border-color:#d1d1d1;border-bottom:2px solid #0f6cbd}
+.uci textarea{resize:vertical}
+.uci .lookup .lkval{height:32px;display:flex;align-items:center;border:1px solid transparent;border-bottom-color:#d1d1d1;border-radius:4px 0 0 4px;background:#f5f5f5;padding:0 10px}
+.uci .lookup .lkval a{color:#0f6cbd;text-decoration:none;font-weight:600}
+.uci .lookup button{height:32px;width:32px;border:1px solid transparent;border-bottom-color:#d1d1d1;border-radius:0 4px 4px 0;background:#f5f5f5}
+.uci .radios label{gap:6px}
+.uci .tlnew{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.obtn{align-self:flex-start;padding:5px 14px;border:1px solid #d1d1d1;border-radius:4px;background:#fff;font:600 13px "Segoe UI",system-ui,sans-serif;cursor:pointer;color:#242424}
+.obtn.primary{background:#0f6cbd;border-color:#0f6cbd;color:#fff}
+.obtn.primary:hover{background:#115ea3}
+.tli{display:flex;gap:10px;padding:10px 0;border-top:1px solid #f0f0f0}
+.tli .tic{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;flex:none;background:#ebf3fc;color:#0f6cbd}
+.tli .tic svg{width:16px;height:16px}
+.tli .tmeta{font-size:12px;color:#616161}
+.tli .ttext{white-space:pre-wrap;overflow-wrap:anywhere}
+.uci .pcard{display:flex;gap:10px;align-items:center;margin-top:8px}
+.uci .pav{width:36px;height:36px;border-radius:50%;background:#e3c7f4;color:#3b1d5c;display:grid;place-items:center;font-weight:600;flex:none}
+.uci .owrap{overflow:auto}
+.uci table.ogt{width:100%;border-collapse:collapse;min-width:420px}
+.uci .ogt th{text-align:left;font-weight:600;font-size:12px;color:#424242;padding:8px;border-bottom:1px solid #e0e0e0;white-space:nowrap}
+.uci .ogt td{padding:8px;border-bottom:1px solid #f0f0f0;white-space:nowrap}
+.uci .ogt td:first-child,.uci .ogt th:first-child{width:28px}
+.uci .ogt input{min-height:0;width:auto;padding:0}
+.uci .ogt tr[data-row]:hover{background:#f5f5f5}
+.uci .ogt tr.sel{background:#ebf3fc}
+.uci .ogt a{color:#0f6cbd;text-decoration:none}
+.uci .ogt .empty td{color:#616161;white-space:normal;padding:16px 8px}
+.uci .gtools{display:flex;gap:4px;margin-bottom:6px;flex-wrap:wrap}
+.uci .gcount{font-size:12px;color:#616161;padding-top:8px}
+.uci .ofoot{flex:none;display:flex;gap:16px;align-items:center;padding:6px 16px;background:#fff;border-top:1px solid #e0e0e0;font-size:12px;color:#424242}
+.uci .ofoot .msg{margin-left:auto}
+.uci .copilot{flex:none;width:300px;display:flex;flex-direction:column;background:#fff;border-left:1px solid #e0e0e0}
+.uci .cph{display:flex;align-items:center;gap:8px;padding:12px 14px;font-weight:600;border-bottom:1px solid #f0f0f0}
+.uci .cph svg{width:18px;height:18px;color:#5c2e91}
+.uci .cph button{margin-left:auto;border:none;background:none;cursor:pointer;width:28px;height:28px;border-radius:4px;font-size:16px}
+.uci .cph button:hover{background:#f0f0f0}
+.uci .cpb{padding:14px;overflow:auto;display:flex;flex-direction:column;gap:12px}
+.uci .cpcard{padding:12px;border-radius:8px;background:#f5f0fb}
+.uci .cpcard p{margin:6px 0 0}
+.uci .cpchips{display:flex;flex-direction:column;gap:6px}
+.uci .cpchips button{text-align:left;padding:8px 10px;border:1px solid #d1d1d1;border-radius:8px;background:#fff;cursor:pointer}
+.uci .cpchips button:hover{background:#f5f5f5}
+.uci .cpnote{font-size:11px;color:#616161}
+
+@media (max-width:760px){
+  body{font-size:13px}
+  .strip{padding:6px 8px;gap:8px}
+  .strip .who small{display:none}
+  .vers button{min-width:54px;padding:4px 8px;font-size:13px}
+  .desktop{padding:0}
+  .desk-icon{display:none}
+  .stage.closed .desk-icon{display:flex}
+  .window{max-height:none;border-radius:0!important;border:none!important;box-shadow:none!important;padding:0!important}
+  .taskbar{display:none}
+  .classic,.ribbon{font-size:13px}
+  .classic .crmhead .brand{display:none}
+  .classic .body,.ribbon .body{flex-direction:column}
+  .classic .leftnav,.ribbon .leftnav{width:auto;display:flex;align-items:center;overflow-x:auto;white-space:nowrap;padding:4px;border-right:none;border-bottom:1px solid var(--line,#c5d5ea)}
+  .classic .leftnav h3,.ribbon .leftnav h3,.ribbon .leftnav h5,.ribbon .leftnav .fsel{display:none}
+  .classic .leftnav button,.ribbon .leftnav button{width:auto;margin:0 2px;flex:none}
+  .fa{display:none}
+  .cols{grid-template-columns:1fr}
+  .fr{grid-template-columns:104px minmax(0,1fr)}
+  .classic .panel{margin:0 6px 6px;padding:4px 10px 12px}
+  .classic .tabs{padding:6px 6px 0}
+  .classic input,.classic select,.classic .lookup .lkval,.classic .lookup button,.ribbon input,.ribbon select,.ribbon .lookup .lkval,.ribbon .lookup button{height:28px}
+  .tb .lbl-opt{display:none}
+  .gwrap,.gtool,.gfoot{margin-left:6px;margin-right:6px}
+  .ribbon .rgroups{min-height:0}
+  .ribbon .fscroll{padding:4px 10px 12px}
+  .os-win11 .addr{display:none}
+  .uci{font-size:14px}
+  .uci .sitemap,.uci .gsearch,.uci .appsub{display:none}
+  .uci .ogrid,.uci .ogrid.two{grid-template-columns:1fr}
+  .uci .ohf{margin-left:0;gap:16px}
+  .uci .cmdbar{margin:6px 6px 0}
+  .uci .oscroll{padding:8px 6px}
+  .uci .copilot{position:absolute;inset:48px 0 0 0;width:auto;z-index:10}
+  .uci .obody{position:relative}
+}
+
+/* ---------- Windows 8 / Windows 10 chrome ---------- */
+.os-win8{background:linear-gradient(135deg,var(--w8-a),var(--w8-b) 60%,var(--w8-c))}
+.os-win10{background:radial-gradient(40% 70% at 70% 45%,var(--w10-b),transparent 75%),var(--w10-a)}
+.os-win8 .window{background:#fff;border:7px solid #6b9ed1;border-top:0;box-shadow:0 0 0 1px #4a7fb5,0 6px 26px var(--shade)}
+.os-win8 .titlebar{height:30px;padding:0 0 0 8px;background:#6b9ed1;color:#000;font:12px "Segoe UI",Tahoma,sans-serif;align-items:flex-start}
+.os-win8 .titlebar .t{text-align:center;align-self:center}
+.os-win8 .titlebar .ticon{align-self:center}
+.os-win8 .wbtn{width:30px;height:21px;border:none;background:none;color:#000}
+.os-win8 .wbtn:hover{background:#8db6df}
+.os-win8 .wbtn.x{width:46px;background:#c75050;color:#fff}
+.os-win8 .taskbar{height:40px;background:rgba(18,64,112,.88);color:#fff;font:12px "Segoe UI",sans-serif}
+.os-win8 .task{height:40px;padding:0 14px;border:none;background:rgba(255,255,255,.08);color:#fff;max-width:260px}
+.os-win8 .task.on{background:rgba(255,255,255,.22)}
+.os-win10 .window{background:#fff;border:1px solid #1883d7;box-shadow:0 6px 26px var(--shade)}
+.os-win10 .titlebar{height:36px;padding:0 0 0 8px;background:#dee1e6;color:#1b1b1b;font:12px "Segoe UI",sans-serif;align-items:flex-end;gap:0}
+.os-win10 .btab{display:flex;align-items:center;gap:8px;height:30px;padding:0 14px;max-width:300px;min-width:0;background:#fff;border-radius:6px 6px 0 0;white-space:nowrap}
+.os-win10 .btab span{overflow:hidden;text-overflow:ellipsis}
+.os-win10 .wbtn{width:46px;height:36px;border:none;background:none;color:#1b1b1b;align-self:stretch}
+.os-win10 .wbtn:hover{background:#c9ccd1}
+.os-win10 .wbtn.x:hover{background:#e81123;color:#fff}
+.os-win10 .addr{flex:none;display:flex;align-items:center;gap:8px;height:34px;padding:0 10px;background:#fff;border-bottom:1px solid #dadce0;font:12px "Segoe UI",sans-serif;color:#444}
+.os-win10 .addr svg{width:14px;height:14px;flex:none}
+.os-win10 .addr div{flex:1;min-width:0;height:26px;display:flex;align-items:center;padding:0 12px;border-radius:13px;background:#f1f3f4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.os-win10 .taskbar{height:40px;background:rgba(16,16,16,.94);color:#fff;font:12px "Segoe UI",sans-serif;gap:0}
+.w10search{height:40px;width:270px;display:flex;align-items:center;gap:10px;padding:0 12px;border:none;background:#f3f3f3;color:#555;cursor:pointer;font:12px "Segoe UI",sans-serif}
+.w10search svg{width:14px;height:14px}
+.os-win10 .task{width:48px;height:40px;justify-content:center;border:none;background:none;position:relative}
+.os-win10 .task span{display:none}
+.os-win10 .task svg{width:20px;height:20px}
+.os-win10 .task.on{background:rgba(255,255,255,.1)}
+.os-win10 .task.on::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:#76b9ed}
+.os-win10 .tray{color:#fff}
+.os-win8 .dlg{background:#fff;border:1px solid #6b9ed1}
+.os-win8 .dlg .titlebar{height:28px;background:#6b9ed1}
+.os-win10 .dlg{background:#fff;border:1px solid #1883d7}
+.os-win10 .dlg .titlebar{height:30px;padding:0 10px;background:#fff;align-items:center}
+.os-win8 .dlg .btn,.os-win10 .dlg .btn{border-radius:0;border-color:#adadad;background:#e1e1e1}
+
+/* ================= CRM 2013 / 2016 (flat) ================= */
+.flat{font:12px/1.4 "Segoe UI",Tahoma,sans-serif;color:#262626;background:#fff}
+.flat .navbar{flex:none;height:44px;display:flex;align-items:stretch;background:#1f1f1f;color:#fff;overflow-x:auto;overflow-y:hidden}
+.v2016 .navbar{background:#002050}
+.nb-logo{display:flex;align-items:center;padding:0 16px;font:600 13px "Segoe UI",sans-serif;white-space:nowrap}
+.nb-ico,.nb-right button{flex:none;width:44px;height:44px;border:none;background:none;color:#fff;cursor:pointer;display:grid;place-items:center}
+.nb-ico svg,.nb-right svg{width:16px;height:16px}
+.nb-item{flex:none;display:flex;align-items:center;gap:6px;padding:0 14px;border:none;border-left:1px solid rgba(255,255,255,.18);background:none;color:#fff;cursor:pointer;font:14px "Segoe UI",sans-serif;white-space:nowrap}
+.v2013 .nb-item.area{text-transform:uppercase;font-weight:600;font-size:13px}
+.nb-item svg{width:12px;height:12px}
+.nb-item:hover,.nb-item.on,.nb-ico:hover,.nb-right button:hover{background:rgba(255,255,255,.14)}
+.nb-right{margin-left:auto;display:flex;align-items:center}
+.nb-user{display:flex;flex-direction:column;justify-content:center;padding:0 12px;white-space:nowrap;font-size:12px;line-height:1.2}
+.nb-user small{font-size:10px;opacity:.7}
+.shelf{flex:none;display:flex;gap:4px;padding:10px 12px;background:#e6e6e6;overflow-x:auto;border-bottom:1px solid #ccc}
+.tile{flex:none;width:100px;height:84px;display:flex;flex-direction:column;justify-content:space-between;padding:8px;border:none;background:#1160b7;color:#fff;text-align:left;cursor:pointer;font:12px "Segoe UI",sans-serif}
+.tile:hover{background:#0d4f99}
+.tile svg{width:22px;height:22px}
+.tile.sel{background:#0b3f7a}
+.tile span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.shelf.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:2px 18px;padding:12px 16px;background:#0b2f60;border-bottom:none;color:#fff}
+.shelf.list h6{margin:4px 6px;font:600 11px "Segoe UI",sans-serif;color:#a9c1e4;text-transform:uppercase;letter-spacing:.3px}
+.shelf.list button{display:flex;width:100%;align-items:center;gap:8px;border:none;background:none;color:#fff;padding:6px;cursor:pointer;text-align:left;font:13px "Segoe UI",sans-serif}
+.shelf.list button:hover{background:rgba(255,255,255,.12)}
+.shelf.list svg{width:16px;height:16px;flex:none}
+.fcmd{flex:none;display:flex;gap:2px;padding:4px 8px;background:#fff;border-bottom:1px solid #e1e1e1;overflow-x:auto;white-space:nowrap}
+.fcb{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:none;background:none;cursor:pointer;color:#444;font:600 11px "Segoe UI",sans-serif;text-transform:uppercase;letter-spacing:.2px;white-space:nowrap}
+.fcb:hover{background:#e3effa}
+.fcb svg{width:16px;height:16px;color:#555;flex:none}
+.fscroll2{flex:1;overflow:auto;padding:12px 20px 20px}
+.fh{display:flex;flex-wrap:wrap;align-items:flex-end;gap:16px;padding-bottom:10px;border-bottom:1px solid #e1e1e1}
+.fh-ent{font:600 11px "Segoe UI",sans-serif;color:#666;letter-spacing:.3px;text-transform:uppercase}
+.fh-name{font:300 30px/1.15 "Segoe UI Light","Segoe UI",sans-serif;color:#262626}
+.fh-hf{margin-left:auto;display:flex;gap:26px;flex-wrap:wrap}
+.fh-hf .hl{font:600 10px "Segoe UI",sans-serif;color:#666;text-transform:uppercase;letter-spacing:.3px}
+.fh-hf .hv{font-size:14px;white-space:nowrap}
+.flat a{color:#1160b7;text-decoration:none}
+.ftab h2{margin:18px 0 6px;font:300 20px "Segoe UI Light","Segoe UI",sans-serif;color:#262626;text-transform:uppercase;letter-spacing:.5px}
+.f3{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.3fr) minmax(0,.9fr);gap:28px}
+.f2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px}
+.flat .fcol h3{display:flex;justify-content:space-between;align-items:center;margin:12px 0 6px;padding-bottom:4px;border-bottom:1px solid #ccc;font:600 12px "Segoe UI",sans-serif;color:#262626;text-transform:uppercase;letter-spacing:.3px}
+.flat .fcol h3 button{border:none;background:none;cursor:pointer;width:24px;height:24px;display:grid;place-items:center}
+.flat .fcol h3 svg{width:14px;height:14px}
+.flat .fr{grid-template-columns:minmax(0,42%) minmax(0,1fr);gap:8px;padding:1px 0}
+.flat .fr>label,.flat .fr>label.r,.flat .fr>label.b{color:#666}
+.flat input,.flat select,.flat textarea{font:inherit;color:#262626;width:100%;height:26px;padding:2px 6px;border:1px solid transparent;background:transparent;border-radius:0}
+.flat textarea{height:auto;resize:vertical}
+.flat input::placeholder,.flat textarea::placeholder{color:#262626}
+.flat input:hover,.flat select:hover,.flat textarea:hover{border-color:#ccc}
+.flat input:focus,.flat select:focus,.flat textarea:focus{outline:none;border-color:#1160b7;background:#fff}
+.flat .radios input{height:auto}
+.flat .lookup .lkval{height:26px;display:flex;align-items:center;border:1px solid transparent;background:transparent;padding:0 6px}
+.flat .lookup button{height:26px;width:26px;border:1px solid transparent;background:transparent}
+.flat .lookup:hover .lkval,.flat .lookup:hover button{border-color:#ccc}
+.ph{color:#262626}
+.vuci19 .ph{color:#323130}
+.soctabs{display:flex;gap:18px;margin-top:12px;border-bottom:1px solid #ccc}
+.soctabs button{padding:6px 0;border:none;border-bottom:3px solid transparent;background:none;cursor:pointer;color:#666;font:600 12px "Segoe UI",sans-serif;text-transform:uppercase;letter-spacing:.3px}
+.soctabs button[aria-selected="true"]{color:#262626;border-bottom-color:#1160b7}
+.snew{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.flat .snew textarea{border:1px solid #ccc;background:#fff}
+.fbtn{align-self:flex-end;padding:4px 14px;border:none;background:#1160b7;color:#fff;cursor:pointer;font:600 11px "Segoe UI",sans-serif;text-transform:uppercase}
+.fbtn.ghost{align-self:auto;background:#f0f0f0;color:#262626}
+.sacts{display:flex;gap:4px;flex-wrap:wrap;margin:10px 0}
+.sitem{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid #eee}
+.sic{width:30px;height:30px;flex:none;display:grid;place-items:center;background:#1160b7;color:#fff}
+.sic svg{width:16px;height:16px}
+.stext{white-space:pre-wrap;overflow-wrap:anywhere}
+.smeta{font-size:11px;color:#666}
+.qv{margin-top:8px;padding:8px;background:#f4f4f4}
+.qv div:first-child{font-weight:600}
+table.ftbl{width:100%;border-collapse:collapse}
+.ftbl th{text-align:left;font-weight:600;color:#444;padding:6px;border-bottom:1px solid #ccc;white-space:nowrap}
+.ftbl td{padding:6px;border-bottom:1px solid #eee;white-space:nowrap}
+.ftbl input{width:auto!important;height:auto!important}
+.ftbl tr[data-row]:hover{background:#e3effa}
+.ftbl tr.sel{background:#cfe3f7}
+.ftbl .empty td{color:#666;white-space:normal;padding:14px 6px}
+.fgt{display:flex;gap:4px;margin:10px 0 4px}
+.fgv .owrap{overflow:auto}
+.fgv .gcount{font-size:11px;color:#666;padding-top:8px}
+.ffoot{flex:none;display:flex;align-items:center;gap:14px;padding:4px 12px;border-top:1px solid #e1e1e1;background:#fff;font-size:12px;color:#444}
+.ffoot .msg{margin-left:auto;color:#666}
+.ffoot .unsaved,.ofoot .unsaved{color:#666}
+.ffoot button,.ofoot .fsave{border:none;background:none;cursor:pointer;width:28px;height:28px;display:grid;place-items:center;color:#444;border-radius:4px}
+.ffoot button:hover,.ofoot .fsave:hover{background:#eee}
+.ffoot svg,.ofoot .fsave svg{width:16px;height:16px}
+
+/* ================= Unified Interface 2019 ================= */
+.vuci19.uci{background:#fff;font-size:14px}
+.vuci19 .appbar{background:#002050}
+.vuci19 .sitemap{background:#f3f2f1;border-right:1px solid #e1dfdd;display:flex;flex-direction:column}
+.vuci19 .sitemap button{border-radius:0;margin:0;width:100%;padding:7px 16px}
+.vuci19 .sitemap button:hover{background:#e1dfdd}
+.vuci19 .sitemap button[aria-current="page"]{background:#fff}
+.vuci19 .sitemap button[aria-current="page"]::before{background:#002050;top:0;bottom:0;border-radius:0}
+.vuci19 .sitemap .areasw{margin-top:auto;border-top:1px solid #e1dfdd;font-weight:600}
+.areasw .aico{width:22px;height:22px;display:grid;place-items:center;background:#486991;color:#fff;font-size:11px;flex:none}
+.vuci19 .cmdbar{margin:0;border-radius:0;box-shadow:none;background:#f3f2f1;border-bottom:1px solid #e1dfdd;padding:2px 8px}
+.vuci19 .cmd{border-radius:0}
+.vuci19 .cmd:hover{background:#e1dfdd}
+.vuci19 .oscroll{padding:0 18px 18px}
+.vuci19 .ohead{background:none;box-shadow:none;border-radius:0;padding:16px 0 8px}
+.vuci19 .oavatar{border-radius:50%;background:#486991}
+.vuci19 .otabs{margin:0;padding:0;border-bottom:1px solid #e1dfdd}
+.vuci19 .otab{border-radius:0}
+.vuci19 .otab[aria-selected="true"]::after{background:#0078d4;bottom:-1px;height:2px;border-radius:0}
+.vuci19 .ogrid{margin-top:16px}
+.vuci19 .card{box-shadow:none;border:1px solid #e1dfdd;border-radius:2px}
+.vuci19 .card h3{font-size:15px}
+.vuci19 input,.vuci19 select,.vuci19 textarea,.vuci19 .lookup .lkval,.vuci19 .lookup button{background:transparent;border:1px solid transparent;border-radius:0}
+.vuci19 input:hover,.vuci19 select:hover,.vuci19 textarea:hover,.vuci19 .lookup:hover .lkval,.vuci19 .lookup:hover button{border-color:#8a8886}
+.vuci19 input:focus,.vuci19 select:focus,.vuci19 textarea:focus{background:#fff;border:1px solid #0078d4}
+.vuci19 input::placeholder,.vuci19 textarea::placeholder{color:#323130}
+.vuci19 .tlnew textarea{border-color:#8a8886}
+.vuci19 .lookup .lkval a{font-weight:400;color:#0078d4}
+.vuci19 .hv a,.vuci19 .ogt a{color:#0078d4}
+.vuci19 .obtn{border-radius:2px}
+.vuci19 .obtn.primary{background:#0078d4;border-color:#0078d4}
+.vuci19 .tli .tic{background:#deecf9;color:#0078d4}
+
+@media (max-width:760px){
+  .vuci19 .sitemap,.os-win10 .addr{display:none}
+  .flat{font-size:13px}
+  .f3,.f2{grid-template-columns:1fr;gap:4px}
+  .fh-hf{margin-left:0;gap:16px}
+  .fscroll2{padding:8px 10px 14px}
+  .nb-logo,.nb-user{display:none}
+  .fh-name{font-size:24px}
+}
+
+/* ---------- browser / mobile switch ---------- */
+.moderow{flex:none;display:flex;align-items:center;gap:12px;padding:6px 14px;background:var(--strip-bg);color:var(--strip-text);border-bottom:1px solid var(--strip-line);font:12px/1.3 system-ui,-apple-system,"Segoe UI",sans-serif}
+.seg{flex:none;display:inline-flex;border:1px solid var(--strip-line);border-radius:8px;overflow:hidden}
+.seg button{border:none;background:none;color:var(--strip-text);padding:5px 14px;cursor:pointer;font:600 12px system-ui,-apple-system,"Segoe UI",sans-serif}
+.seg button+button{border-left:1px solid var(--strip-line)}
+.seg button[aria-pressed="true"]{background:var(--strip-on-bg);color:var(--strip-on-text)}
+.seg button:disabled{color:var(--strip-muted);cursor:not-allowed}
+.seg button:focus-visible{outline:2px solid var(--strip-text);outline-offset:-2px}
+.mcap{min-width:0;color:var(--strip-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ---------- generic devices ---------- */
+.mdesk{align-items:center;justify-content:center}
+.device{position:relative;z-index:1;margin:auto;flex:none;display:flex;flex-direction:column;max-height:100%;box-shadow:0 12px 32px var(--shade)}
+.screen{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;color-scheme:light;color:#000;background:#fff}
+.hw{flex:none;display:flex;align-items:center;justify-content:center;gap:12px}
+.hw-top{height:16px;gap:8px}
+.hw-top.tall{height:34px}
+.spk{width:44px;height:4px;border-radius:2px;background:#2a2a2a}
+.led{width:6px;height:6px;border-radius:50%;background:#7ad97a}
+.dpad{width:56px;height:56px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#d0d4da,#6c727b);border:1px solid #333;box-shadow:inset 0 0 0 14px rgba(0,0,0,.08)}
+.dpad.sm{width:44px;height:44px}
+.dv-pda{width:300px;height:600px;padding:16px 18px 0;border-radius:22px 22px 44px 44px;background:linear-gradient(90deg,#666c76,#a3a9b3 15%,#8b919b 85%,#5d636c);border:1px solid #444}
+.dv-pda .screen{border:3px solid #22252b}
+.hw-pda{height:104px}
+.hw-pda i{width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#b9bec7,#5c626b);border:1px solid #444}
+.dv-wm{width:300px;height:620px;padding:12px 16px 0;border-radius:20px;background:linear-gradient(90deg,#1d2026,#3a3f48 50%,#1d2026);border:1px solid #000}
+.dv-wm .screen{border:2px solid #000}
+.hw-wm{height:110px}
+.hw-wm i,.crow i{width:34px;height:18px;border-radius:9px;background:#4a505a}
+.hw-wm i.call,.crow i.call{background:#3c8a3c}
+.hw-wm i.end,.crow i.end{background:#a33}
+.dv-candy{width:290px;height:680px;padding:12px 18px 0;border-radius:30px;background:linear-gradient(90deg,#15181c,#33383f 50%,#15181c);border:1px solid #000}
+.dv-candy .screen{border:2px solid #000}
+.hw-candy{flex-direction:column;gap:0;padding:10px 0 16px}
+.crow{display:flex;align-items:center;gap:12px}
+.keys{display:grid;grid-template-columns:repeat(3,64px);gap:6px;margin-top:10px}
+.keys i{height:26px;border-radius:12px;background:#2b3036;color:#cfd3d8;font:600 13px Arial,sans-serif;font-style:normal;display:grid;place-items:center}
+.dv-touch,.dv-slab13{width:320px;height:660px;padding:0 12px;border-radius:32px;background:#121212;border:1px solid #333}
+.dv-slab13{border-radius:12px}
+.hw-keys{height:56px;gap:56px;color:#9a9a9a}
+.hw-keys svg{width:18px;height:18px}
+.hw-keys .hb{width:16px;height:16px;border:2px solid currentColor;border-radius:4px}
+.dv-touch .hw-keys .hb{border-radius:50%}
+.dv-slab16{width:340px;height:700px;padding:34px 10px 34px;border-radius:34px;background:#0f1012;border:1px solid #333}
+.dv-modern{width:356px;height:730px;padding:11px;border-radius:46px;background:#0d0d0f;border:1px solid #3a3a3a}
+.dv-modern .screen{border-radius:36px}
+.mscroll{flex:1;min-height:0;overflow:auto}
+.mtoast{position:absolute;left:50%;bottom:70px;transform:translateX(-50%);z-index:8;max-width:90%;padding:6px 12px;border-radius:4px;background:rgba(0,0,0,.82);color:#fff;font:12px "Segoe UI",Tahoma,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+.mtoast:empty{display:none}
+.mpop{position:absolute;right:6px;bottom:52px;z-index:7;min-width:160px;background:#fff;border:1px solid #888;box-shadow:2px 3px 8px rgba(0,0,0,.3)}
+.mpop button{display:block;width:100%;text-align:left;padding:7px 12px;border:none;background:none;cursor:pointer;font:inherit;color:inherit}
+.mpop button:hover,.mpop button:focus-visible{background:#dde8f6;outline:none}
+.mf label.r{color:#c00000}.mf label.b{color:#0033cc}
+.mrel button{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;padding:9px 2px;border:none;border-bottom:1px solid #e5e5e5;background:none;cursor:pointer;font:inherit;color:inherit;text-align:left}
+.mrel b{font-weight:600;color:#666}
+.mitems{list-style:none;margin:0;padding:0}
+.mitems button{display:flex;flex-direction:column;gap:1px;width:100%;padding:9px 2px;border:none;border-bottom:1px solid #e5e5e5;background:none;cursor:pointer;font:inherit;color:inherit;text-align:left}
+.mi2{font-size:.85em;color:#666}
+.mempty{color:#666;padding:10px 2px}
+.mnotes{display:flex;flex-direction:column;gap:6px}
+.mnotes textarea{min-height:56px}
+.mbtn{align-self:flex-end;padding:5px 14px;border:1px solid #707070;background:#f0f0f0;cursor:pointer;font:inherit;color:inherit}
+.mnote{padding:6px 0;border-bottom:1px solid #e5e5e5}
+.mnm{font-size:.85em;color:#666}
+.mnt{white-space:pre-wrap;overflow-wrap:anywhere}
+
+/* ---------- Pocket PC / Windows Mobile (1.2, 3.0) ---------- */
+.sc-pda{font:11px/1.3 Tahoma,Verdana,sans-serif;background:#fff}
+.pda-top{flex:none;height:24px;display:flex;align-items:center;gap:6px;padding:0 4px 0 6px;background:linear-gradient(#3a6ea5,#0a246a);color:#fff;font-weight:bold}
+.mv-v3-0 .pda-top{background:linear-gradient(#6e9de6,#1c4fa6 60%,#163f88)}
+.pda-t{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pda-ok{width:24px;height:18px;padding:0;border:1px solid #fff;border-radius:9px;background:none;color:#fff;font:bold 10px Tahoma,sans-serif;cursor:pointer}
+.pda-body{flex:1;min-height:0;display:flex;flex-direction:column}
+.pda-h{flex:none;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 6px;border-bottom:1px solid #000}
+.pda-h select{font:inherit;height:20px;max-width:130px}
+.sc-pda a{color:#0033cc}
+.pda-list{width:100%;border-collapse:collapse}
+.pda-list th{text-align:left;font-weight:normal;padding:2px 4px;background:#e8e8e8;border:1px solid #999;border-top:none}
+.pda-list td{padding:4px;border-bottom:1px solid #ddd;cursor:pointer}
+.pda-list tr:hover td,.pda-list tr:focus td{background:#0a246a;color:#fff;outline:none}
+.mv-v3-0 .pda-list tbody tr:nth-child(even) td{background:#eef3fb}
+.mv-v3-0 .pda-list tr:hover td,.mv-v3-0 .pda-list tr:focus td{background:#1c4fa6;color:#fff}
+.pda-pane{padding:4px 6px}
+.sc-pda .mf{display:grid;grid-template-columns:84px minmax(0,1fr);align-items:center;gap:4px;padding:1px 0}
+.sc-pda .mf.full{grid-template-columns:1fr}
+.sc-pda input,.sc-pda select,.sc-pda textarea{font:inherit;width:100%;height:20px;border:1px solid #7f9db9;padding:1px 3px;border-radius:0;background:#fff;color:#000}
+.sc-pda textarea{height:auto}
+.sc-pda .radios input{width:auto;height:auto}
+.sc-pda .lookup .lkval{height:20px;border:1px solid #7f9db9;border-right:none;padding:1px 3px;background:#f3f3f3;white-space:nowrap;overflow:hidden}
+.sc-pda .lookup button{width:20px;height:20px;padding:0;border:1px solid #7f9db9;background:#eee}
+.sc-pda .lookup button svg{width:11px;height:11px}
+.sc-pda .mrel button,.sc-pda .mitems button{padding:5px 2px}
+.pda-tabs{flex:none;display:flex;border-top:1px solid #000;background:#ececec;overflow-x:auto}
+.pda-tabs button{flex:none;padding:3px 6px;border:none;border-right:1px solid #999;background:none;cursor:pointer;font:inherit;color:#000}
+.pda-tabs button[aria-selected="true"]{background:#fff;font-weight:bold}
+.pda-bar{flex:none;height:26px;display:flex;align-items:center;gap:2px;padding:0 4px;background:linear-gradient(#f4f4f4,#cfcfcf);border-top:1px solid #808080}
+.pda-bar button{border:none;background:none;padding:3px 8px;cursor:pointer;font:inherit;color:#000}
+.pda-bar button:hover,.pda-bar button[aria-expanded="true"]{background:#0a246a;color:#fff}
+.pda-soft{flex:none;height:30px;display:flex;justify-content:space-between;align-items:center;padding:0 6px;background:linear-gradient(#7d9fd6,#2a4f8f);color:#fff;font-weight:bold}
+.pda-soft button{border:none;background:none;color:#fff;font:inherit;cursor:pointer;padding:4px 10px}
+.sc-pda .mpop{bottom:32px;font:11px Tahoma,sans-serif}
+
+/* ---------- Mobile Express (4.0, 2011) ---------- */
+.sc-mex{font:12px/1.35 Verdana,Arial,sans-serif;background:#fff}
+.mex-status{flex:none;height:16px;display:flex;justify-content:space-between;align-items:center;padding:0 5px;background:#000;color:#fff;font:10px Arial,sans-serif}
+.mex-chrome{flex:none;padding:3px 4px;background:#d9dde3;border-bottom:1px solid #999}
+.mex-url{display:block;padding:1px 4px;background:#fff;border:1px solid #999;font:10px Arial,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mv-v2011 .mex-chrome{background:linear-gradient(#f2f2f2,#cfd4da)}
+.mv-v2011 .mex-url{border-radius:9px;padding:2px 8px}
+.mex-head{padding:4px 6px;background:#1e395b;color:#fff;font-weight:bold;font-size:11px}
+.mv-v2011 .mex-head{background:linear-gradient(#3f7fc6,#1f4f8f)}
+.mex-crumb{padding:4px 6px;background:#eef3f9;border-bottom:1px solid #c3d1e2;font-size:11px}
+.sc-mex a{color:#0033cc}
+.sc-mex h2{font-size:13px;margin:8px 6px 4px}
+.sc-mex h3{font-size:12px;margin:10px 6px 2px;padding-bottom:2px;border-bottom:1px solid #c3d1e2}
+.mex-links{padding:0 6px 6px;font-size:11px}
+.mex-f{padding:3px 6px;border-bottom:1px solid #eee;overflow-wrap:anywhere}
+.mex-f b{display:block;font-size:10px;color:#555}
+.sc-mex .mf{padding:3px 6px}
+.sc-mex .mf label{display:block;font-weight:bold;font-size:10px;color:#555}
+.sc-mex input,.sc-mex select,.sc-mex textarea{font:inherit;width:100%;border:1px solid #7f9db9;padding:2px;background:#fff;color:#000;border-radius:0}
+.sc-mex .radios input{width:auto}
+.sc-mex .lookup .lkval{border:1px solid #7f9db9;border-right:none;padding:2px;min-height:20px;background:#f3f3f3}
+.sc-mex .lookup button{width:22px;border:1px solid #7f9db9;background:#eee;padding:0}
+.sc-mex .lookup button svg{width:11px;height:11px}
+.mex-ul{margin:4px 0;padding:0 6px 0 24px}
+.mex-ul li{padding:2px 0}
+.mex-p{padding:0 6px}
+.mex-btn{font:inherit;padding:1px 8px;border:1px solid #707070;background:linear-gradient(#fff,#ddd);cursor:pointer;color:#000}
+.mex-view,.mex-actions{padding:4px 6px;display:flex;gap:4px}
+.mex-view select{width:auto}
+.mex-foot{padding:12px 6px;color:#777;font-size:10px;text-align:center}
+
+/* ---------- CRM for phones (2013, 2016) ---------- */
+.sc-app{font:14px/1.35 "Segoe UI",sans-serif;background:#fff;color:#262626}
+.ap-status{flex:none;height:20px;display:flex;justify-content:flex-end;align-items:center;gap:8px;padding:0 10px;background:#000;color:#fff;font-size:11px}
+.mv-v2016 .ap-status{background:#001a40;justify-content:space-between}
+.ap-head{flex:none;height:48px;display:flex;align-items:center;gap:2px;padding:0 4px;background:#1f1f1f;color:#fff}
+.mv-v2016 .ap-head{background:#002050}
+.ap-head button{width:40px;height:40px;border:none;background:none;color:#fff;cursor:pointer;display:grid;place-items:center}
+.ap-head svg{width:18px;height:18px}
+.ap-title{flex:1;min-width:0;padding-left:6px;font:600 14px "Segoe UI",sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v2013-t{letter-spacing:.4px}
+.ap-big{padding:10px 14px 2px;font:300 30px/1.1 "Segoe UI Light","Segoe UI",sans-serif;overflow-wrap:anywhere}
+.mv-v2016 .ap-big{font:600 20px/1.2 "Segoe UI",sans-serif;padding-top:14px}
+.ap-sub{padding:0 14px 6px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:.3px}
+.ap-pivot{display:flex;gap:18px;padding:0 14px;overflow-x:auto;white-space:nowrap}
+.ap-pivot button{border:none;background:none;padding:4px 0;cursor:pointer;font:300 24px "Segoe UI Light","Segoe UI",sans-serif;color:#aaa;text-transform:lowercase}
+.ap-pivot button[aria-selected="true"]{color:#262626}
+.mv-v2016 .ap-pivot{gap:16px;border-bottom:1px solid #ddd}
+.mv-v2016 .ap-pivot button{padding:10px 0;font:600 12px "Segoe UI",sans-serif;text-transform:uppercase;color:#666;border-bottom:3px solid transparent}
+.mv-v2016 .ap-pivot button[aria-selected="true"]{color:#002050;border-bottom-color:#0078d7}
+.ap-pane{padding:4px 14px 16px}
+.sc-app h4{margin:16px 0 4px;padding-bottom:3px;border-bottom:1px solid #ccc;font:600 12px "Segoe UI",sans-serif;text-transform:uppercase;letter-spacing:.3px}
+.sc-app .mf{padding:4px 0}
+.sc-app .mf label{display:block;font-size:12px;color:#666}
+.sc-app input,.sc-app select,.sc-app textarea{font:inherit;width:100%;min-height:32px;padding:2px 0;border:none;border-bottom:1px solid #ccc;background:transparent;color:#262626;border-radius:0}
+.sc-app input::placeholder,.sc-app textarea::placeholder{color:#262626}
+.sc-app input:focus,.sc-app select:focus,.sc-app textarea:focus{outline:none;border-bottom:2px solid #1160b7}
+.sc-app .radios input{min-height:0;width:auto}
+.sc-app .lookup .lkval{min-height:32px;display:flex;align-items:center;border-bottom:1px solid #ccc}
+.sc-app .lookup button{width:32px;border:none;border-bottom:1px solid #ccc;background:none}
+.sc-app a{color:#1160b7;text-decoration:none}
+.sc-app .mnotes textarea{border:1px solid #ccc;padding:4px}
+.sc-app .mbtn{border:none;background:#1160b7;color:#fff;font:600 12px "Segoe UI",sans-serif;text-transform:uppercase}
+.ap-list{list-style:none;margin:0;padding:4px 14px}
+.ap-list button{display:flex;flex-direction:column;width:100%;padding:8px 0;border:none;background:none;text-align:left;cursor:pointer;color:inherit}
+.ap-l1{font:300 20px/1.2 "Segoe UI Light","Segoe UI",sans-serif}
+.mv-v2016 .ap-list button{border-bottom:1px solid #e5e5e5;padding:10px 0}
+.mv-v2016 .ap-l1{font:600 15px "Segoe UI",sans-serif}
+.ap-l2{font-size:12px;color:#666}
+.ap-bar{flex:none;display:flex;justify-content:center;gap:24px;padding:6px 0 5px;background:#1f1f1f;color:#fff}
+.mv-v2013 .ap-bar{text-transform:lowercase}
+.mv-v2016 .ap-bar{background:#002050;justify-content:space-around;gap:0}
+.ap-bar button{display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:none;color:#fff;cursor:pointer;font:11px "Segoe UI",sans-serif}
+.ap-bar .ring{width:34px;height:34px;border:2px solid #fff;border-radius:50%;display:grid;place-items:center}
+.mv-v2016 .ap-bar .ring{border:none;width:26px;height:26px}
+.ap-bar svg{width:16px;height:16px}
+.sc-app .mpop{bottom:62px;background:#1f1f1f;color:#fff;border:none}
+.mv-v2016.sc-app .mpop{background:#fff;color:#262626;border:1px solid #ccc}
+.sc-app .mpop button:hover{background:#1160b7;color:#fff}
+
+/* ---------- Dynamics 365 for phones: UCI 2019 and New Look ---------- */
+.sc-muci{font:14px/1.4 "Segoe UI",system-ui,sans-serif;color:#242424;background:#faf9f8}
+.mv-online.sc-muci{background:#f5f5f5}
+.sbar{flex:none;height:28px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;background:#002050;color:#fff;font:600 12px "Segoe UI",sans-serif}
+.mv-online .sbar{background:#0b2447;padding:0 28px}
+.sbar .cam{width:10px;height:10px;border-radius:50%;background:#000}
+.mu-head{flex:none;height:48px;display:flex;align-items:center;gap:2px;padding:0 4px;background:#002050;color:#fff}
+.mv-online .mu-head{background:#0b2447}
+.mu-head button{width:40px;height:40px;border:none;background:none;color:#fff;display:grid;place-items:center;cursor:pointer;border-radius:4px}
+.mu-head button:hover{background:rgba(255,255,255,.12)}
+.mu-head svg{width:18px;height:18px}
+.mu-title{flex:1;min-width:0;padding-left:6px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mu-view{display:flex;align-items:center;gap:6px;padding:12px 14px 6px;font-weight:600}
+.mu-view svg{width:12px;height:12px}
+.mu-list{list-style:none;margin:0;padding:0 10px}
+.mu-list button{display:flex;align-items:center;gap:12px;width:100%;padding:10px 6px;border:none;border-bottom:1px solid #edebe9;background:none;cursor:pointer;text-align:left;color:inherit;font:inherit}
+.mv-online .mu-list li{margin-bottom:6px}
+.mv-online .mu-list button{background:#fff;border:none;border-radius:8px;padding:10px 12px;box-shadow:0 1px 2px rgba(0,0,0,.14),0 0 2px rgba(0,0,0,.12)}
+.mu-lav{width:36px;height:36px;flex:none;border-radius:50%;display:grid;place-items:center;background:#486991;color:#fff;font-weight:600;font-size:13px}
+.mv-online .mu-lav{border-radius:6px;background:#5c2e91}
+.mu-l1{display:block;font-weight:600}
+.mu-l2{display:block;font-size:12px;color:#616161}
+.mu-rec{display:flex;align-items:center;gap:12px;padding:14px;background:#fff}
+.mu-av{width:48px;height:48px;flex:none;border-radius:50%;display:grid;place-items:center;background:#486991;color:#fff;font-weight:600;font-size:17px}
+.mv-online .mu-av{border-radius:8px;background:#5c2e91}
+.mu-name{font-weight:600;font-size:18px;line-height:1.2;overflow-wrap:anywhere}
+.mu-sub{font-size:12px;color:#616161}
+.mu-tabs{display:flex;gap:4px;padding:0 8px;background:#fff;border-bottom:1px solid #edebe9}
+.mu-tabs button{position:relative;padding:10px;border:none;background:none;cursor:pointer;color:#424242;font:inherit}
+.mu-tabs button[aria-selected="true"]{font-weight:600;color:#242424}
+.mu-tabs button[aria-selected="true"]::after{content:"";position:absolute;left:10px;right:10px;bottom:0;height:2px;background:#0078d4}
+.mv-online .mu-tabs button[aria-selected="true"]::after{height:3px;border-radius:2px;background:#0f6cbd}
+.mu-pane{padding:10px}
+.mu-sec{background:#fff;border:1px solid #edebe9;padding:10px 12px;margin-bottom:10px}
+.mv-online .mu-sec{border:none;border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.14),0 0 2px rgba(0,0,0,.12)}
+.mu-sec h4{margin:0 0 6px;font:600 15px "Segoe UI",sans-serif}
+.sc-muci .mf{padding:3px 0}
+.sc-muci .mf label{display:block;font-size:12px;color:#616161}
+.sc-muci input,.sc-muci select,.sc-muci textarea{font:inherit;width:100%;min-height:34px;padding:4px 8px;border:1px solid transparent;border-bottom-color:#8a8886;background:transparent;color:#242424;border-radius:0}
+.sc-muci input::placeholder,.sc-muci textarea::placeholder{color:#323130}
+.mv-online input,.mv-online select,.mv-online textarea{background:#f5f5f5;border-radius:4px;border-bottom-color:#d1d1d1}
+.mv-online input::placeholder,.mv-online textarea::placeholder{color:#707070}
+.sc-muci input:focus,.sc-muci select:focus,.sc-muci textarea:focus{outline:none;border-bottom:2px solid #0078d4;background:#fff}
+.sc-muci .radios input{min-height:0;width:auto}
+.sc-muci .lookup .lkval{min-height:34px;display:flex;align-items:center;padding:0 8px;border-bottom:1px solid #8a8886}
+.mv-online .lookup .lkval{background:#f5f5f5;border-radius:4px 0 0 4px;border-bottom-color:#d1d1d1}
+.sc-muci .lookup button{width:34px;border:none;border-bottom:1px solid #8a8886;background:transparent}
+.mv-online .lookup button{background:#f5f5f5;border-radius:0 4px 4px 0;border-bottom-color:#d1d1d1}
+.sc-muci a{color:#0078d4;text-decoration:none}
+.mv-online a{color:#0f6cbd}
+.sc-muci .tlnew{display:flex;flex-direction:column;gap:8px;margin-bottom:6px}
+.mu-cmd{flex:none;display:flex;justify-content:space-around;padding:4px 0;background:#f3f2f1;border-top:1px solid #edebe9}
+.mv-online .mu-cmd{margin:6px 10px 4px;border:none;border-radius:24px;background:#fff;box-shadow:0 4px 12px rgba(0,0,0,.18)}
+.mu-cmd button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 8px;border:none;background:none;cursor:pointer;font:11px "Segoe UI",sans-serif;color:#242424}
+.mu-cmd svg{width:18px;height:18px}
+.sc-muci .mpop{bottom:70px;border:none;border-radius:8px;box-shadow:0 8px 16px rgba(0,0,0,.18),0 0 2px rgba(0,0,0,.12);padding:4px}
+.sc-muci .mpop button{border-radius:4px}
+.sc-app .lookup .lkval{border:none;border-bottom:1px solid #ccc;background:transparent;padding:0}
+.sc-muci .lookup .lkval{border:none;border-bottom:1px solid #8a8886;background:transparent}
+.mv-online .lookup .lkval{background:#f5f5f5;border-bottom-color:#d1d1d1}
+.homebar{flex:none;height:18px;display:flex;justify-content:center;align-items:center}
+.homebar i{width:110px;height:4px;border-radius:2px;background:#222}
+
+@media (max-width:760px){
+  .moderow{padding:5px 8px}
+  .device{width:100%!important;height:100%!important;max-height:none;padding:0!important;border:none!important;border-radius:0!important;background:none!important;box-shadow:none}
+  .device .hw{display:none}
+  .device .screen{border:none!important;border-radius:0!important}
+  .sbar,.ap-status,.mex-status,.homebar{display:none}
+  .sc-pda{font-size:13px}
+  .sc-pda .mf{grid-template-columns:104px minmax(0,1fr)}
+  .sc-pda input,.sc-pda select,.sc-pda .lookup .lkval,.sc-pda .lookup button{height:26px}
+  .sc-mex{font-size:14px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---------- compact layout, zoom, full-size window ---------- */
+.zoomc{flex:none;display:inline-flex;border:1px solid var(--strip-line);border-radius:8px;overflow:hidden}
+.zoomc button{min-width:30px;padding:5px 9px;border:none;background:none;color:var(--strip-text);cursor:pointer;font:600 12px system-ui,-apple-system,"Segoe UI",sans-serif}
+.zoomc button+button{border-left:1px solid var(--strip-line)}
+.zoomc button:hover{background:var(--strip-line)}
+.zoomc button:focus-visible{outline:2px solid var(--strip-text);outline-offset:-2px}
+.strip .who small{max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.window{max-width:none;max-height:none}
+.window.max{position:absolute;inset:0;margin:0}
+.desk-icon{z-index:2}
+@media (min-width:761px){
+  .strip{padding:6px 12px;gap:10px}
+  .vers button{min-width:52px;padding:3px 9px;font-size:13px}
+  .vers button small{font-size:10px}
+  .seg button{padding:5px 12px}
+  .desktop{padding:8px 10px}
+  .scene{zoom:var(--z,1)}
+  .veil .dlg{zoom:var(--z,1)}
+}
+@media (max-width:760px){
+  .zoomc{display:none}
+  .strip{flex-wrap:wrap}
+  .vers{order:3;width:100%;margin-left:0}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="gBlue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fb2f0"/><stop offset="1" stop-color="#2b63b8"/></linearGradient>
+    <linearGradient id="gGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe08a"/><stop offset="1" stop-color="#d99a1e"/></linearGradient>
+  </defs>
+  <symbol id="i-building" viewBox="0 0 32 32"><rect x="5" y="6" width="16" height="23" fill="url(#gBlue)" stroke="#1d3f80"/><rect x="21" y="13" width="7" height="16" fill="#9fbde6" stroke="#1d3f80"/><g fill="#fff"><rect x="8" y="9" width="3" height="3"/><rect x="15" y="9" width="3" height="3"/><rect x="8" y="15" width="3" height="3"/><rect x="15" y="15" width="3" height="3"/><rect x="8" y="21" width="3" height="3"/><rect x="15" y="21" width="3" height="3"/></g><rect x="11" y="24" width="4" height="5" fill="#ffe08a" stroke="#1d3f80"/></symbol>
+  <symbol id="i-info" viewBox="0 0 16 16"><rect x="2" y="1.5" width="12" height="13" fill="#fff" stroke="#4a6fa8"/><path d="M4.5 5h7M4.5 8h7M4.5 11h4.5" stroke="#4a6fa8"/></symbol>
+  <symbol id="i-addr" viewBox="0 0 16 16"><path d="M8 1.5a4.5 4.5 0 0 1 4.5 4.5c0 3.4-4.5 8.5-4.5 8.5S3.5 9.4 3.5 6A4.5 4.5 0 0 1 8 1.5z" fill="#e2553b" stroke="#8c2414"/><circle cx="8" cy="6" r="1.6" fill="#fff"/></symbol>
+  <symbol id="i-act" viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="12" fill="#fff" stroke="#4a6fa8"/><rect x="1.5" y="2.5" width="13" height="3" fill="#d9472b"/><path d="M4.5 9.5l2 2 4-4" stroke="#2f8a2f" stroke-width="1.6" fill="none"/></symbol>
+  <symbol id="i-hist" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5" fill="#fff" stroke="#4a6fa8"/><path d="M8 4v4l3 2" stroke="#1d3f80" stroke-width="1.4" fill="none"/></symbol>
+  <symbol id="i-acc" viewBox="0 0 16 16"><rect x="3" y="3" width="8" height="11.5" fill="url(#gBlue)" stroke="#1d3f80"/><rect x="11" y="7" width="3" height="7.5" fill="#9fbde6" stroke="#1d3f80"/><g fill="#fff"><rect x="5" y="5" width="1.5" height="1.5"/><rect x="7.5" y="5" width="1.5" height="1.5"/><rect x="5" y="8" width="1.5" height="1.5"/><rect x="7.5" y="8" width="1.5" height="1.5"/></g></symbol>
+  <symbol id="i-person" viewBox="0 0 16 16"><circle cx="8" cy="5" r="3" fill="#f6c99b" stroke="#8a5a2b"/><path d="M2.5 15c0-3.4 2.5-5.5 5.5-5.5s5.5 2.1 5.5 5.5z" fill="url(#gBlue)" stroke="#1d3f80"/></symbol>
+  <symbol id="i-money" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5" fill="url(#gGold)" stroke="#9a6a0c"/><path d="M10.3 5.4A3 3 0 1 0 10.3 10.6M4.5 7h4.5M4.5 9h4.5" stroke="#7a4f00" stroke-width="1.2" fill="none"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 16 16"><path d="M3 1.5h7l3 3v10H3z" fill="#fff" stroke="#4a6fa8"/><path d="M10 1.5v3h3" fill="none" stroke="#4a6fa8"/><path d="M5 8h6M5 10.5h6" stroke="#9fbde6"/></symbol>
+  <symbol id="i-case" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5" fill="#fff" stroke="#c4341b"/><circle cx="8" cy="8" r="2.6" fill="none" stroke="#c4341b" stroke-width="1.4"/><path d="M8 1.5v3.9M8 10.6v3.9M1.5 8h3.9M10.6 8h3.9" stroke="#c4341b" stroke-width="1.4"/></symbol>
+  <symbol id="i-list" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" fill="#fff" stroke="#4a6fa8"/><path d="M4.5 5h7M4.5 8h7M4.5 11h7" stroke="#2f8a2f" stroke-width="1.4"/></symbol>
+  <symbol id="i-save" viewBox="0 0 16 16"><rect x="1.5" y="1.5" width="13" height="13" rx="1" fill="url(#gBlue)" stroke="#1d3f80"/><rect x="4" y="2" width="8" height="5" fill="#fff"/><rect x="9" y="3" width="2" height="3" fill="#1d3f80"/><rect x="3.5" y="9.5" width="9" height="5" fill="#e9eff9"/></symbol>
+  <symbol id="i-saveclose" viewBox="0 0 16 16"><rect x="1.5" y="1.5" width="13" height="13" rx="1" fill="url(#gBlue)" stroke="#1d3f80"/><rect x="4" y="2" width="8" height="5" fill="#fff"/><rect x="3.5" y="9.5" width="9" height="5" fill="#e9eff9"/><circle cx="12" cy="12" r="3.6" fill="#2f8a2f" stroke="#fff"/><path d="M10.4 12l1.1 1.1 2-2" stroke="#fff" stroke-width="1.2" fill="none"/></symbol>
+  <symbol id="i-savenew" viewBox="0 0 16 16"><rect x="1.5" y="1.5" width="13" height="13" rx="1" fill="url(#gBlue)" stroke="#1d3f80"/><rect x="4" y="2" width="8" height="5" fill="#fff"/><rect x="3.5" y="9.5" width="9" height="5" fill="#e9eff9"/><circle cx="12" cy="12" r="3.6" fill="#e8a317" stroke="#fff"/><path d="M12 10v4M10 12h4" stroke="#fff" stroke-width="1.3"/></symbol>
+  <symbol id="i-print" viewBox="0 0 16 16"><rect x="4" y="1.5" width="8" height="5" fill="#fff" stroke="#555"/><rect x="1.5" y="6" width="13" height="6" rx="1" fill="#c9c9c9" stroke="#555"/><rect x="4" y="10" width="8" height="4.5" fill="#fff" stroke="#555"/><circle cx="12.5" cy="8" r=".8" fill="#2f8a2f"/></symbol>
+  <symbol id="i-del" viewBox="0 0 16 16"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="#c4341b" stroke-width="2.6" stroke-linecap="round"/></symbol>
+  <symbol id="i-find" viewBox="0 0 16 16"><circle cx="6.5" cy="6.5" r="4.5" fill="#dff0ff" stroke="#1d3f80" stroke-width="1.4"/><path d="M10 10l4.5 4.5" stroke="#1d3f80" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5" fill="#6fb2f2" stroke="#1d3f80"/><path d="M3 6c2 1 3-1 4 1s-1 3 1 4M10 3c0 2 2 2 3 4" stroke="#2f8a2f" stroke-width="1.6" fill="none"/></symbol>
+  <symbol id="i-share" viewBox="0 0 16 16"><circle cx="5" cy="6" r="2.4" fill="#f6c99b" stroke="#8a5a2b"/><circle cx="11" cy="6" r="2.4" fill="#f6c99b" stroke="#8a5a2b"/><path d="M1 14c0-2.6 1.8-4 4-4s4 1.4 4 4zM7 14c0-2.6 1.8-4 4-4s4 1.4 4 4z" fill="url(#gBlue)" stroke="#1d3f80"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 16 16"><rect x="1.5" y="3.5" width="13" height="9" fill="#fff" stroke="#4a6fa8"/><path d="M1.5 3.5l6.5 5 6.5-5" fill="none" stroke="#4a6fa8"/></symbol>
+  <symbol id="i-flow" viewBox="0 0 16 16"><rect x="1.5" y="2" width="5" height="4" fill="#9fd29f" stroke="#2f6f2f"/><rect x="9.5" y="10" width="5" height="4" fill="#9fbde6" stroke="#1d3f80"/><path d="M4 6v6h5.5" fill="none" stroke="#555"/></symbol>
+  <symbol id="i-deact" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="#fff" stroke="#c4341b" stroke-width="1.6"/><path d="M4 12l8-8" stroke="#c4341b" stroke-width="1.6"/></symbol>
+  <symbol id="i-link" viewBox="0 0 16 16"><circle cx="4.5" cy="8" r="2.5" fill="url(#gBlue)" stroke="#1d3f80"/><circle cx="11.5" cy="8" r="2.5" fill="url(#gGold)" stroke="#9a6a0c"/><path d="M7 8h2" stroke="#555" stroke-width="1.4"/></symbol>
+  <symbol id="i-note" viewBox="0 0 16 16"><path d="M2 2h12v8l-4 4H2z" fill="#fff6a8" stroke="#9a8a1c"/><path d="M10 14v-4h4" fill="#e8dc6a" stroke="#9a8a1c"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 16 16"><path d="M4 1.5h3l1 4-2 1.2c.8 1.8 2 3 3.8 3.8L11 8.5l4 1v3c0 1-1 2-2 2C7 14.5 1.5 9 1.5 3.5c0-1 1-2 2.5-2z" fill="url(#gBlue)" stroke="#1d3f80"/></symbol>
+  <symbol id="i-form" viewBox="0 0 16 16"><rect x="1.5" y="1.5" width="13" height="13" fill="#fff" stroke="#4a6fa8"/><rect x="3.5" y="4" width="9" height="2" fill="#9fbde6"/><rect x="3.5" y="8" width="9" height="2" fill="#9fbde6"/><rect x="3.5" y="12" width="5" height="1.5" fill="#9fbde6"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 32 32"><path d="M16 3l14 25H2z" fill="url(#gGold)" stroke="#8a5a00"/><rect x="14.6" y="11" width="2.8" height="9" fill="#000"/><rect x="14.6" y="22" width="2.8" height="2.8" fill="#000"/></symbol>
+  <symbol id="i-infobig" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="url(#gBlue)" stroke="#1d3f80"/><circle cx="16" cy="9.5" r="2" fill="#fff"/><rect x="14.3" y="13" width="3.4" height="11" rx="1" fill="#fff"/></symbol>
+  <symbol id="g-min" viewBox="0 0 10 10"><rect x="1" y="7" width="6" height="2" fill="currentColor"/></symbol>
+  <symbol id="g-max" viewBox="0 0 10 10"><rect x="1" y="1" width="8" height="8" fill="none" stroke="currentColor" stroke-width="1.2"/><rect x="1" y="1" width="8" height="2" fill="currentColor"/></symbol>
+  <symbol id="g-close" viewBox="0 0 10 10"><path d="M1.5 1.5l7 7M8.5 1.5l-7 7" stroke="currentColor" stroke-width="1.7"/></symbol>
+  <symbol id="g-min11" viewBox="0 0 10 10"><path d="M1 5h8" stroke="currentColor" stroke-width=".9"/></symbol>
+  <symbol id="g-max11" viewBox="0 0 10 10"><rect x="1" y="1" width="8" height="8" rx="1" fill="none" stroke="currentColor" stroke-width=".9"/></symbol>
+  <symbol id="g-close11" viewBox="0 0 10 10"><path d="M1 1l8 8M9 1l-8 8" stroke="currentColor" stroke-width=".9"/></symbol>
+  <!-- mono line icons for Dynamics 365 -->
+  <symbol id="m-home" viewBox="0 0 16 16"><path d="M2.5 7.5L8 3l5.5 4.5V14h-3.5v-4h-4v4H2.5z" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></symbol>
+  <symbol id="m-clock" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.8" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M8 4.8V8l2.2 1.6" fill="none" stroke="currentColor" stroke-width="1.1"/></symbol>
+  <symbol id="m-pin" viewBox="0 0 16 16"><path d="M9.5 2.5l4 4-2 1-2.5 2.5.5 3-1 1-3-3-3.5 3.5M4.5 8.5l3-3 1-2z" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></symbol>
+  <symbol id="m-dash" viewBox="0 0 16 16"><rect x="2.5" y="2.5" width="11" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M5 11V8M8 11V5.5M11 11V7" stroke="currentColor" stroke-width="1.3"/></symbol>
+  <symbol id="m-check" viewBox="0 0 16 16"><rect x="2.5" y="2.5" width="11" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M5 8l2 2 4-4" fill="none" stroke="currentColor" stroke-width="1.2"/></symbol>
+  <symbol id="m-acc" viewBox="0 0 16 16"><path d="M3 14V3.5h6.5V14M9.5 7H13v7M2 14h12" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M5 6h2M5 8.5h2M5 11h2" stroke="currentColor"/></symbol>
+  <symbol id="m-person" viewBox="0 0 16 16"><circle cx="8" cy="5.5" r="2.7" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M3 14c.4-2.8 2.4-4.3 5-4.3s4.6 1.5 5 4.3" fill="none" stroke="currentColor" stroke-width="1.1"/></symbol>
+  <symbol id="m-lead" viewBox="0 0 16 16"><circle cx="7" cy="5.5" r="2.5" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M2.5 14c.3-2.6 2.1-4 4.5-4 1 0 1.8.2 2.5.6M12 9.5v4M10 11.5h4" fill="none" stroke="currentColor" stroke-width="1.1"/></symbol>
+  <symbol id="m-opp" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.8" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="8" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="8" cy="8" r=".9" fill="currentColor"/></symbol>
+  <symbol id="m-doc" viewBox="0 0 16 16"><path d="M4 2h5.5L12.5 5v9H4z M9.5 2v3h3" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></symbol>
+  <symbol id="m-box" viewBox="0 0 16 16"><path d="M2.5 5L8 2.5 13.5 5v6L8 13.5 2.5 11zM2.5 5L8 7.5 13.5 5M8 7.5v6" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></symbol>
+  <symbol id="m-search" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.3" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M10.2 10.2L14 14" stroke="currentColor" stroke-width="1.2"/></symbol>
+  <symbol id="m-plus" viewBox="0 0 16 16"><path d="M8 2.5v11M2.5 8h11" stroke="currentColor" stroke-width="1.2"/></symbol>
+  <symbol id="m-gear" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.2" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M8 1.8v2M8 12.2v2M1.8 8h2M12.2 8h2M3.6 3.6l1.4 1.4M11 11l1.4 1.4M3.6 12.4L5 11M11 5l1.4-1.4" stroke="currentColor" stroke-width="1.1"/></symbol>
+  <symbol id="m-back" viewBox="0 0 16 16"><path d="M13 8H3.5M7.5 4L3.5 8l4 4" fill="none" stroke="currentColor" stroke-width="1.2"/></symbol>
+  <symbol id="m-save" viewBox="0 0 16 16"><path d="M2.5 2.5h9l2 2v9h-11z" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/><path d="M5 2.5v3.5h5V2.5M4.5 13.5v-4h7v4" fill="none" stroke="currentColor" stroke-width="1.1"/></symbol>
+  <symbol id="m-saveclose" viewBox="0 0 16 16"><path d="M2.5 2.5h9l2 2v4M8.5 13.5h-6v-11" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/><path d="M5 2.5v3.5h5V2.5M10 11.5l1.5 1.5 3-3" fill="none" stroke="currentColor" stroke-width="1.1"/></symbol>
+  <symbol id="m-deact" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.8" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M4 12l8-8" stroke="currentColor" stroke-width="1.1"/></symbol>
+  <symbol id="m-link" viewBox="0 0 16 16"><path d="M6.5 9.5l3-3M5.5 7.5l-1.8 1.8a2.3 2.3 0 0 0 3.2 3.2l1.8-1.8M10.5 8.5l1.8-1.8a2.3 2.3 0 0 0-3.2-3.2L7.3 5.3" fill="none" stroke="currentColor" stroke-width="1.1"/></symbol>
+  <symbol id="m-assign" viewBox="0 0 16 16"><circle cx="6" cy="5.5" r="2.5" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M1.5 14c.3-2.6 2.1-4 4.5-4M10 9.5h4.5M12.5 7.5l2 2-2 2" fill="none" stroke="currentColor" stroke-width="1.1"/></symbol>
+  <symbol id="m-share" viewBox="0 0 16 16"><path d="M9.5 3.5L13.5 7l-4 3.5V8.5c-3 0-5 1-6.5 3.5.5-3.5 2.5-6 6.5-6.5z" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></symbol>
+  <symbol id="m-mail" viewBox="0 0 16 16"><rect x="2" y="3.5" width="12" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M2.5 4.5L8 8.5l5.5-4" fill="none" stroke="currentColor" stroke-width="1.1"/></symbol>
+  <symbol id="m-refresh" viewBox="0 0 16 16"><path d="M13 8a5 5 0 1 1-1.5-3.6M13 2.5v3h-3" fill="none" stroke="currentColor" stroke-width="1.1"/></symbol>
+  <symbol id="m-more" viewBox="0 0 16 16"><circle cx="3.5" cy="8" r="1.1" fill="currentColor"/><circle cx="8" cy="8" r="1.1" fill="currentColor"/><circle cx="12.5" cy="8" r="1.1" fill="currentColor"/></symbol>
+  <symbol id="m-spark" viewBox="0 0 16 16"><path d="M8 1.5c.5 3 1.9 4.5 5 5-3.1.5-4.5 2-5 5-.5-3-1.9-4.5-5-5 3.1-.5 4.5-2 5-5zM12.5 10.5c.2 1.2.8 1.8 2 2-1.2.2-1.8.8-2 2-.2-1.2-.8-1.8-2-2 1.2-.2 1.8-.8 2-2z" fill="currentColor"/></symbol>
+  <symbol id="m-waffle" viewBox="0 0 16 16"><g fill="currentColor"><circle cx="3.5" cy="3.5" r="1.2"/><circle cx="8" cy="3.5" r="1.2"/><circle cx="12.5" cy="3.5" r="1.2"/><circle cx="3.5" cy="8" r="1.2"/><circle cx="8" cy="8" r="1.2"/><circle cx="12.5" cy="8" r="1.2"/><circle cx="3.5" cy="12.5" r="1.2"/><circle cx="8" cy="12.5" r="1.2"/><circle cx="12.5" cy="12.5" r="1.2"/></g></symbol>
+  <symbol id="m-chev" viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.2"/></symbol>
+  <symbol id="m-note" viewBox="0 0 16 16"><path d="M3 2.5h10v7l-3.5 4H3z M9.5 13.5v-4H13" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></symbol>
+  <symbol id="m-phone" viewBox="0 0 16 16"><path d="M4.5 2.5h2l1 3-1.5 1c.7 1.6 1.9 2.8 3.5 3.5l1-1.5 3 1v2c0 .8-.7 1.5-1.5 1.5C6.6 13 3 9.4 3 4c0-.8.7-1.5 1.5-1.5z" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></symbol>
+  <symbol id="m-cal" viewBox="0 0 16 16"><rect x="2.5" y="3.5" width="11" height="10" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M2.5 6.5h11M5.5 2v3M10.5 2v3" stroke="currentColor" stroke-width="1.1"/></symbol>
+  <symbol id="m-browser" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="#1f8fd6"/><path d="M4 11c1-4 5-6 9-4.5 2 1 2.5 3 1 4H8c0 2 2 3.5 4.5 3.2-3.2 2-7.5.8-8.5-2.7z" fill="#bfe9ff"/></symbol>
+</svg>
+
+<header class="strip">
+  <div class="who"><svg width="22" height="22" aria-hidden="true"><use href="#i-building"/></svg><div>Bofor Oy<small id="mcap"></small></div></div>
+  <div class="seg" id="seg" role="group" aria-label="Client"></div>
+  <nav class="vers" id="vers" aria-label="CRM version"></nav>
+  <div class="zoomc" id="zoomc" role="group" aria-label="Zoom"></div>
+</header>
+
+<div class="stage" id="stage">
+  <div class="scene" id="scene"></div>
+
+  <div class="veil" id="msgVeil" hidden>
+    <div class="dlg" role="alertdialog" aria-modal="true" aria-labelledby="msgTitle" aria-describedby="msgText">
+      <div class="titlebar"><svg class="ticon" aria-hidden="true"><use href="#i-globe"/></svg><div class="t" id="msgTitle">Microsoft CRM</div></div>
+      <div class="db"><svg class="ic" id="msgIcon"><use href="#i-infobig"/></svg><div id="msgText"></div></div>
+      <div class="df"><button class="btn" type="button" id="msgOk">OK</button><button class="btn" type="button" id="msgCancel">Cancel</button></div>
+    </div>
+  </div>
+
+  <div class="veil" id="lkVeil" hidden>
+    <div class="dlg big" role="dialog" aria-modal="true" aria-labelledby="lkTitle">
+      <div class="titlebar"><svg class="ticon" aria-hidden="true"><use href="#i-globe"/></svg><div class="t" id="lkTitle">Look Up Records</div></div>
+      <div class="db lkbody">
+        <div class="lkrow"><span>Look for:</span><span class="ro" id="lkEntity">Contact</span><span></span></div>
+        <div class="lkrow"><label for="lkFind">Find:</label><input id="lkFind"><button class="btn" type="button" id="lkGo">Find</button></div>
+        <div class="lklist"><table><thead><tr><th></th><th id="lkCol1">Name</th><th id="lkCol2">Detail</th></tr></thead><tbody id="lkBody"></tbody></table></div>
+      </div>
+      <div class="df"><button class="btn" type="button" id="lkOk">OK</button><button class="btn" type="button" id="lkCancel">Cancel</button><button class="btn" type="button" id="lkRemove">Remove Value</button></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pad = n => String(n).padStart(2,'0');
+const fmt = d => d.getDate()+'.'+(d.getMonth()+1)+'.'+d.getFullYear()+' '+d.getHours()+':'+pad(d.getMinutes());
+const ic = (id, cls) => '<svg'+(cls?' class="'+cls+'"':'')+' aria-hidden="true"><use href="#'+id+'"/></svg>';
+
+/* ---------------- versions ---------------- */
+const VERS = [
+  {k:'1.0',  tok:'v1-0',  yr:'2003', fam:'classic', os:'w2k',   cls:'v10', brand:'Microsoft<b>CRM</b>', prod:'Microsoft CRM', ie:'Microsoft Internet Explorer', req:'color', groups:false},
+  {k:'1.2',  tok:'v1-2',  yr:'2004', fam:'classic', os:'xp',    cls:'v12', mob:'Microsoft CRM Mobile for Pocket PC', mfam:'pda', dev:'pda', brand:'Microsoft<b>CRM</b>', prod:'Microsoft CRM', ie:'Microsoft Internet Explorer', req:'color', groups:true},
+  {k:'3.0',  tok:'v3-0',  yr:'2005', fam:'classic', os:'xp',    cls:'v30', mob:'Microsoft Dynamics CRM 3.0 Mobile for Windows Mobile', mfam:'pda', dev:'wm', brand:'Microsoft Dynamics<b>CRM</b>', prod:'Microsoft Dynamics CRM', ie:'Microsoft Internet Explorer', req:'color', groups:true, mkt:true, fa:true},
+  {k:'4.0',  tok:'v4-0',  yr:'2007', fam:'classic', os:'vista', cls:'v40', mob:'Mobile Express for Microsoft Dynamics CRM 4.0, in a phone browser', mfam:'mex', dev:'candy', brand:'Microsoft Dynamics<b>CRM 4.0</b>', prod:'Microsoft Dynamics CRM', ie:'Windows Internet Explorer', req:'star', groups:true, mkt:true, fa:true, saveNew:true},
+  {k:'2011', tok:'v2011', yr:'2011', fam:'ribbon',  os:'win7',  cls:'v2011', mob:'Mobile Express for Microsoft Dynamics CRM 2011, in a phone browser', mfam:'mex', dev:'touch', prod:'Microsoft Dynamics CRM', ie:'Windows Internet Explorer', req:'star'},
+  {k:'2013', tok:'v2013', yr:'2013', fam:'flat', os:'win8', cls:'v2013', mob:'Microsoft Dynamics CRM for phones', mfam:'app', dev:'slab13', prod:'Microsoft Dynamics CRM', req:'star', ph:'--'},
+  {k:'2016', tok:'v2016', yr:'2016', fam:'flat', os:'win10', cls:'v2016', mob:'Microsoft Dynamics CRM for phones, the app introduced with 2015 Update 1', mfam:'app', dev:'slab16', prod:'Microsoft Dynamics CRM', req:'star', ph:'--'},
+  {k:'UCI', tok:'uci', yr:'2019', fam:'uci', os:'win10', cls:'vuci19', mob:'Dynamics 365 for phones, Unified Interface', mfam:'muci', dev:'modern', prod:'Dynamics 365', req:'star', ph:'---', u19:true},
+  {k:'New Look', tok:'online', yr:'2026', fam:'uci', os:'win11', cls:'vonl', mob:'Dynamics 365 mobile app with the new look (preview)', mfam:'muci', dev:'modern', prod:'Dynamics 365', req:'uci'}
+];
+let V = VERS[1];
+let MODE = 'browser';
+
+/* ---------------- shared record ---------------- */
+const IND = ['','Accounting','Agriculture and Non-petrol Natural Resource Extraction','Broadcasting Printing and Publishing','Brokers','Building Supply Retail','Business Services','Consulting','Consumer Services','Design, Direction and Creative Management','Financial','Manufacturing','Other'];
+const F = {
+  name:{l:'Account Name', req:'r'}, num:{l:'Account Number'},
+  parent:{l:'Parent Account', lk:'account'}, contact:{l:'Primary Contact', lk:'contact', req:'b'},
+  rel:{l:'Relationship Type', o:['','Customer','Partner','Reseller','Supplier','Vendor','Competitor','Prospect','Other']},
+  web:{l:'Web Site', on:'Website'}, phone:{l:'Main Phone', on:'Phone', req:'b', im:'tel'}, ophone:{l:'Other Phone', im:'tel'},
+  fax:{l:'Fax', im:'tel'}, mail:{l:'E-mail', on:'Email', im:'email'},
+  aname:{l:'Address Name'}, s1:{l:'Street 1'}, s2:{l:'Street 2'}, s3:{l:'Street 3'}, city:{l:'City'},
+  state:{l:'State/Province'}, zip:{l:'ZIP/Postal Code'}, ctry:{l:'Country/Region'},
+  ship:{l:'Shipping Method', o:['','Airborne','DHL','FedEx','UPS','Postal Mail','Full Load','Will Call']},
+  frt:{l:'Freight Terms', o:['','FOB','No Charge']},
+  terr:{l:'Territory'}, cat:{l:'Category', o:['','Preferred Customer','Standard']}, ind:{l:'Industry', o:IND},
+  own:{l:'Ownership', o:['','Public','Private','Subsidiary','Other']}, rev:{l:'Annual Revenue', im:'decimal'},
+  emp:{l:'No. of Employees', on:'Number of Employees', im:'numeric'}, sic:{l:'SIC Code'}, tick:{l:'Ticker Symbol'},
+  desc:{l:'Description', ta:1},
+  owner:{l:'Owner', lk:'user', req:'r'}, lead:{l:'Originating Lead', lk:'lead'},
+  limit:{l:'Credit Limit', im:'decimal'}, hold:{l:'Credit Hold', o:['No','Yes']},
+  terms:{l:'Payment Terms', o:['','2% 10, Net 30','Net 30','Net 14','Net 45','Net 60']}, price:{l:'Price List', lk:'price'},
+  pref:{l:'Preferred Method', on:'Preferred Method of Contact', o:['Any','E-mail','Phone','Fax','Mail']},
+  cmMail:{l:'E-mail', on:'Email', rd:1}, cmBulk:{l:'Bulk E-mail', on:'Bulk Email', rd:1}, cmPhone:{l:'Phone', rd:1}, cmFax:{l:'Fax', rd:1}, cmPost:{l:'Mail', rd:1}
+};
+const S = {
+  name:'Bofor Oy', num:'ACC-0001', parent:'', contact:'Lasse Räty', rel:'Customer', web:'http://www.bofor.fi',
+  phone:'', ophone:'', fax:'', mail:'', aname:'Head office', s1:'', s2:'', s3:'', city:'Espoo', state:'Uusimaa', zip:'', ctry:'Finland',
+  ship:'Postal Mail', frt:'No Charge', terr:'Finland', cat:'Preferred Customer', ind:'Consulting', own:'Private', rev:'', emp:'50', sic:'', tick:'',
+  desc:'Finnish Microsoft-ecosystem IT consultancy specialising in business applications. Offices in Espoo, Turku and Tampere.',
+  owner:'Lasse Räty', lead:'', limit:'', hold:'No', terms:'Net 14', price:'Standard Price List', pref:'Any',
+  cmMail:'Allow', cmBulk:'Allow', cmPhone:'Allow', cmFax:'Do Not Allow', cmPost:'Allow',
+  created:'12.1.2004 9:14', mod:'28.10.2004 16:02', active:true, dirty:false,
+  notes:[{when:'12.1.2004 9:20', who:'Lasse Räty', text:'Account created during the Microsoft CRM 1.2 pilot.'}]
+};
+
+const GRIDS = {
+  addresses:{title:'More Addresses', entity:'Address', cols:['Address Name','City','Country/Region','Address Type'], rows:[['Turku office','Turku','Finland','Other'],['Tampere office','Tampere','Finland','Other']]},
+  activities:{title:'Activities', entity:'Activity', cols:['Subject','Activity Type','Due Date','Priority'], rows:[['Plan Microsoft CRM 1.2 upgrade','Task','5.11.2004','Normal'],['Call: SQL Server 2000 SP3 licensing','Phone Call','3.11.2004','High'],['Kick-off: Sales for Outlook rollout','Appointment','9.11.2004','Normal']]},
+  history:{title:'History', entity:'Activity', cols:['Subject','Activity Type','Date Completed','Status'], rows:[['Install Microsoft CRM 1.2 on Windows Server 2003','Task','15.3.2004','Completed'],['E-mail: Welcome to Microsoft CRM','E-mail','16.3.2004','Sent']]},
+  subaccounts:{title:'Sub-Accounts', entity:'Account', cols:['Account Name','City','Main Phone'], rows:[]},
+  contacts:{title:'Contacts', entity:'Contact', cols:['Full Name','Job Title','Business Phone','E-mail'], rows:[['Lasse Räty','CEO','','']]},
+  opportunities:{title:'Opportunities', entity:'Opportunity', cols:['Topic','Est. Close Date','Est. Revenue','Probability','Rating'], rows:[['Microsoft CRM Sales for Outlook rollout','31.12.2004','€ 24 000','60','Warm'],['Navision integration study','15.2.2005','€ 9 500','30','Cold']]},
+  quotes:{title:'Quotes', entity:'Quote', cols:['Name','Quote ID','Status','Total Amount'], rows:[]},
+  orders:{title:'Orders', entity:'Order', cols:['Name','Order ID','Status','Total Amount'], rows:[]},
+  invoices:{title:'Invoices', entity:'Invoice', cols:['Name','Invoice ID','Status','Total Amount'], rows:[]},
+  cases:{title:'Cases', entity:'Case', cols:['Title','Case Number','Priority','Status','Created On'], rows:[["Sales for Outlook client won't go offline",'CAS-01024-K7Q2','High','Active','21.10.2004']]},
+  contracts:{title:'Contracts', entity:'Contract', cols:['Contract Name','Contract ID','Status','End Date'], rows:[]},
+  lists:{title:'Marketing Lists', entity:'Marketing List', cols:['Name','Member Type','Last Used On'], rows:[]},
+  campaigns:{title:'Campaigns', entity:'Campaign', cols:['Name','Status','Proposed End'], rows:[]}
+};
+const NL = {info:'Information',addresses:'More Addresses',activities:'Activities',history:'History',subaccounts:'Sub-Accounts',contacts:'Contacts',opportunities:'Opportunities',quotes:'Quotes',orders:'Orders',invoices:'Invoices',cases:'Cases',contracts:'Contracts',lists:'Marketing Lists',campaigns:'Campaigns'};
+const NI = {info:'i-info',addresses:'i-addr',activities:'i-act',history:'i-hist',subaccounts:'i-acc',contacts:'i-person',opportunities:'i-money',quotes:'i-doc',orders:'i-doc',invoices:'i-doc',cases:'i-case',contracts:'i-doc',lists:'i-list',campaigns:'i-list'};
+const LK = {
+  account:{entity:'Account', c1:'Account Name', c2:'City', items:[['Adventure Works Cycles','Bothell'],['Contoso Ltd','Seattle'],['Fabrikam, Inc.','Redmond']]},
+  contact:{entity:'Contact', c1:'Full Name', c2:'Job Title', items:[['Lasse Räty','CEO']]},
+  user:{entity:'User', c1:'Full Name', c2:'Business Unit', items:[['Lasse Räty','Bofor'],['CRM Administrator','Bofor']]},
+  lead:{entity:'Lead', c1:'Topic', c2:'Company', items:[['Interested in Microsoft CRM','Bofor Oy']]},
+  price:{entity:'Price List', c1:'Name', c2:'Status', items:[['Standard Price List','Active'],['Partner Price List 2004','Active']]}
+};
+
+/* ---------------- ui state ---------------- */
+let ui;
+function resetUi(){ ui = {view:'info', tab: V.fam==='uci' ? 'summary' : 'general', win:'open', max:false, az:'All', fa:'contact', faOpen: V.k==='3.0', rtab:'account', copilot:false, social:'activities', fnav:null, mscreen:'record', mtab: V.mfam==='pda' ? 'gen' : 'summary', mview:null, medit:false, mmenu:false}; }
+
+/* ---------------- helpers ---------------- */
+const nameNow = () => S.name.trim() || 'New Account';
+function winTitle(){
+  const n = nameNow() + (S.dirty ? ' *' : '');
+  if(V.fam==='uci') return n + ' - Dynamics 365';
+  if(V.fam==='flat') return 'Account: ' + n + ' - Microsoft Dynamics CRM' + (V.os==='win8' ? ' - Internet Explorer' : '');
+  if(V.fam==='ribbon') return 'Account: ' + n + ' - Microsoft Dynamics CRM - Windows Internet Explorer';
+  return 'Account: ' + n + ' - ' + V.ie;
+}
+function labelHTML(id){
+  const f = F[id], text = esc((V.fam==='uci' || V.fam==='flat') && f.on ? f.on : f.l);
+  if(V.req==='color') return {cls: f.req ? ' class="'+f.req+'"' : '', text};
+  if(V.req==='star') return {cls:'', text: text + (f.req==='r' ? '<span class="mk r">*</span>' : f.req==='b' ? '<span class="mk b">+</span>' : '')};
+  return {cls:'', text: text + (f.req==='r' ? '<span class="mk r">*</span>' : '')};
+}
+function control(id){
+  const f = F[id], dis = S.active ? '' : ' disabled';
+  if(f.lk){
+    const v = S[id];
+    return '<div class="lookup"><div class="lkval" data-lkfocus="'+id+'">'+(v ? '<a href="#" data-open="'+id+'">'+esc(v)+'</a>' : (V.ph ? '<span class="ph">'+V.ph+'</span>' : ''))+'</div><button type="button" data-lk="'+id+'" aria-label="Look up '+esc(f.l)+'"'+dis+'>'+ic('i-find')+'</button></div>';
+  }
+  if(f.o) return '<select id="f-'+id+'" data-f="'+id+'"'+dis+'>'+f.o.map(o => '<option'+(o===S[id]?' selected':'')+'>'+esc(o)+'</option>').join('')+'</select>';
+  if(f.ta) return '<textarea id="f-'+id+'" data-f="'+id+'" rows="4"'+(V.ph?' placeholder="'+V.ph+'"':'')+dis+'>'+esc(S[id])+'</textarea>';
+  if(f.rd) return '<div class="radios" role="radiogroup">'+['Allow','Do Not Allow'].map(o => '<label><input type="radio" name="r-'+id+'" value="'+o+'" data-f="'+id+'"'+(S[id]===o?' checked':'')+dis+'>'+o+'</label>').join('')+'</div>';
+  return '<input id="f-'+id+'" data-f="'+id+'" value="'+esc(S[id])+'"'+(f.im?' inputmode="'+f.im+'"':'')+(V.ph?' placeholder="'+V.ph+'"':'')+dis+'>';
+}
+function fieldHTML(id){
+  const f = F[id], L = labelHTML(id), forA = (f.lk || f.rd) ? '' : ' for="f-'+id+'"';
+  return '<div class="fr'+(f.ta?' full':'')+'"><label'+forA+L.cls+'>'+L.text+'</label><div class="fc">'+control(id)+'</div></div>';
+}
+const sec = (title, ids, extra) => '<div class="sec">'+(title?'<h4>'+title+'</h4>':'')+'<div class="cols">'+ids.map(fieldHTML).join('')+(extra||'')+'</div></div>';
+const recInfo = () => '<div class="fr"><label>Created By</label><span class="ro">Lasse Räty</span></div><div class="fr"><label>Created On</label><span class="ro">'+S.created+'</span></div><div class="fr"><label>Modified By</label><span class="ro">Lasse Räty</span></div><div class="fr"><label>Modified On</label><span class="ro" data-bind="mod">'+S.mod+'</span></div>';
+const notesHTML = () => S.notes.map(n => '<div class="note"><div class="nh">Note created on '+n.when+' by '+esc(n.who)+'</div><div class="nb">'+esc(n.text)+'</div></div>').join('');
+const newNoteHTML = () => '<div class="newnote"><label for="noteText">Click here to enter a new note.</label><textarea id="noteText" rows="4"></textarea><button class="btn" type="button" data-cmd="addnote">Add Note</button></div>';
+
+function gridRows(g, filterAz){
+  const rows = g.rows.filter(r => {
+    if(!filterAz || ui.az==='All') return true;
+    const c = (r[0]||'').charAt(0).toUpperCase();
+    return ui.az==='#' ? !/[A-ZÅÄÖ]/.test(c) : c===ui.az;
+  });
+  return rows;
+}
+function tableHTML(g, rows, cls){
+  const head = '<tr><th><input type="checkbox" data-all aria-label="Select all"></th>'+g.cols.map(c => '<th>'+esc(c)+'</th>').join('')+'</tr>';
+  const body = rows.length ? rows.map(r => '<tr data-row tabindex="0"><td><input type="checkbox" aria-label="Select row"></td>'+r.map((v,i) => i===0 ? '<td><a href="#" data-rec>'+esc(v)+'</a></td>' : '<td>'+esc(v)+'</td>').join('')+'</tr>').join('')
+    : '<tr class="empty"><td colspan="'+(g.cols.length+1)+'">There are no '+esc(g.title.toLowerCase())+' in this view.</td></tr>';
+  return '<table class="'+cls+'"><thead>'+head+'</thead><tbody>'+body+'</tbody></table>';
+}
+function classicGridHTML(g){
+  const rows = gridRows(g, true);
+  const az = ['All'].concat('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')).concat(['#']).map(l => '<button type="button" data-az="'+l+'" aria-pressed="'+(l===ui.az)+'">'+l+'</button>').join('');
+  return '<div class="gview"><div class="ghead">'+esc(g.title)+'</div>'+
+    '<div class="gtool"><button class="tb" type="button" data-msg="A new '+esc(g.entity.toLowerCase())+' form would open here, with '+esc(nameNow())+' already filled in.">'+ic('i-doc')+'New '+esc(g.entity)+'</button><span class="sep"></span><button class="tb" type="button" data-msg="More Actions lets you assign, share or deactivate the selected '+esc(g.title.toLowerCase())+'.">More Actions ▾</button><span class="spacer"></span><label>View:&nbsp;<select><option>Active</option><option>Inactive</option></select></label></div>'+
+    '<div class="gwrap">'+tableHTML(g, rows, 'grid')+'</div>'+
+    '<div class="gfoot"><div class="az">'+az+'</div><span class="count" data-count>'+(rows.length ? '1 - '+rows.length+' of '+rows.length+' (0 selected)' : '0 - 0 of 0')+'</span></div></div>';
+}
+
+/* ---------------- window chrome ---------------- */
+function titlebarHTML(){
+  if(V.os==='win11' || V.os==='win10'){
+    const url = V.fam==='flat' ? 'https://bofor.crm4.dynamics.com/main.aspx?etn=account&amp;pagetype=entityrecord' : 'https://bofor.crm4.dynamics.com/main.aspx?appid=salesHub&amp;pagetype=entityrecord&amp;etn=account';
+    return '<div class="titlebar"><div class="btab">'+ic('m-browser','ticon')+'<span data-bind="title">'+esc(winTitle())+'</span></div><div class="t"></div>'+
+      '<button class="wbtn" type="button" data-win="min" aria-label="Minimize">'+ic('g-min11')+'</button><button class="wbtn" type="button" data-win="max" aria-label="Maximize">'+ic('g-max11')+'</button><button class="wbtn x" type="button" data-win="close" aria-label="Close">'+ic('g-close11')+'</button></div>'+
+      '<div class="addr">'+ic('m-back','ticon')+'<div>'+url+'</div></div>';
+  }
+  return '<div class="titlebar">'+ic('i-globe','ticon')+'<div class="t" data-bind="title">'+esc(winTitle())+'</div>'+
+    '<button class="wbtn" type="button" data-win="min" aria-label="Minimize">'+ic('g-min')+'</button><button class="wbtn" type="button" data-win="max" aria-label="Maximize">'+ic('g-max')+'</button><button class="wbtn x" type="button" data-win="close" aria-label="Close">'+ic('g-close')+'</button></div>';
+}
+function taskbarHTML(){
+  const on = ui.win==='open' ? ' on' : '', hide = ui.win==='closed' ? ' hidden' : '';
+  const task = '<button class="task'+on+'" type="button" data-task'+hide+' aria-label="'+esc(winTitle())+'">'+(V.os==='win11' ? ic('m-browser') : ic('i-globe'))+'<span data-bind="title">'+esc(winTitle())+'</span></button>';
+  const clock = '<div class="tray clock">--:--</div>';
+  const startMsg = 'data-msg="The Start menu is not part of this recreation. Use the Bofor Oy icon on the desktop to reopen the account form."';
+  if(V.os==='w2k') return '<div class="taskbar"><button class="start" type="button" '+startMsg+'>Start</button>'+task+clock+'</div>';
+  if(V.os==='xp') return '<div class="taskbar"><button class="start" type="button" '+startMsg+'>start</button>'+task+clock+'</div>';
+  if(V.os==='win8') return '<div class="taskbar">'+task+clock+'</div>';
+  if(V.os==='win10') return '<div class="taskbar"><button class="w10search" type="button" '+startMsg+'>'+ic('m-search')+'Type here to search</button><button class="task'+on+'" type="button" data-task'+hide+' aria-label="'+esc(winTitle())+'">'+ic('m-browser')+'<span data-bind="title">'+esc(winTitle())+'</span></button>'+clock+'</div>';
+  if(V.os==='win11') return '<div class="taskbar"><button class="tbtile" type="button" aria-label="Search" '+startMsg+'>'+ic('m-search')+'</button><button class="tbtile task'+on+'" type="button" data-task'+hide+' aria-label="Dynamics 365">'+ic('m-browser')+'<span data-bind="title">'+esc(winTitle())+'</span></button>'+clock+'</div>';
+  return '<div class="taskbar"><button class="orb" type="button" aria-label="Start" '+startMsg+'></button>'+task+clock+'</div>';
+}
+function sceneHTML(){
+  if(isMobile()) return '<div class="desktop mdesk">'+deviceHTML()+'</div>';
+  const icon = '<button class="desk-icon" type="button" data-desk title="Open '+esc(nameNow())+'">'+(V.os==='win11' || V.os==='win10' ? '<svg width="32" height="32" aria-hidden="true"><use href="#m-browser"/></svg>' : '<svg width="32" height="32" aria-hidden="true"><use href="#i-building"/></svg>')+'<span data-bind="name">'+esc(nameNow())+'</span></button>';
+  let win = '';
+  if(ui.win==='open'){
+    const body = V.fam==='classic' ? classicHTML() : V.fam==='ribbon' ? ribbonHTML() : V.fam==='flat' ? flatHTML() : uciHTML();
+    win = '<div class="window '+V.cls+' '+V.fam+(ui.max?' max':'')+'">'+titlebarHTML()+body+'</div>';
+  }
+  return '<div class="desktop">'+(ui.win==='closed' ? icon : '')+win+'</div>'+taskbarHTML();
+}
+
+/* ---------------- CLASSIC (1.0 – 4.0) ---------------- */
+function menuHTML(name, items, extraCls){
+  return '<div class="menu'+(extraCls||'')+'"><button type="button" data-menu aria-haspopup="true" aria-expanded="false">'+name+'</button><div class="dropdown" role="menu">'+
+    items.map(i => i==='-' ? '<hr>' : '<button type="button" role="menuitem" '+(i[0].startsWith('msg:') ? 'data-msg="'+esc(i[0].slice(4))+'"' : 'data-cmd="'+i[0]+'"')+'>'+i[1]+'</button>').join('')+'</div></div>';
+}
+function classicHTML(){
+  const file = [['save','Save'],['saveclose','Save and Close']].concat(V.saveNew ? [['savenew','Save and New']] : []).concat(['-',['print','Print…'],'-',['close','Close']]);
+  const actions = [['assign','Assign…'],['share','Share…'],['note','Add a Note'],'-',['deactivate', S.active ? 'Deactivate' : 'Activate'],['delete','Delete Account']];
+  const help = [['help','Help on This Page'],'-',['about','About '+V.prod]];
+  const groups = [['Details',['info','addresses','activities','history','subaccounts','contacts']],['Sales',['opportunities','quotes','orders','invoices']],['Service',['cases','contracts']]].concat(V.mkt ? [['Marketing',['lists','campaigns']]] : []);
+  const nav = groups.map(g => (V.groups ? '<h3>'+g[0]+'</h3>' : '') + g[1].map(id => '<button type="button" data-nav="'+id+'"'+(ui.view===id?' aria-current="page"':'')+'>'+ic(NI[id])+'<span>'+NL[id]+'</span></button>').join('')).join('');
+  const tabs = [['general','General'],['details','Details'],['admin','Administration'],['notes','Notes']];
+  let panel;
+  if(ui.tab==='general') panel = sec('General',['name','num','parent','contact','rel','web','phone','ophone','fax','mail']) + sec('Address',['aname','zip','s1','city','s2','state','s3','ctry','ship','frt']);
+  else if(ui.tab==='details') panel = sec('Professional Information',['terr','cat','ind','own','rev','emp','sic','tick']) + sec('Description',['desc']);
+  else if(ui.tab==='admin') panel = sec('Internal Information',['owner','lead']) + sec('Billing Information',['limit','hold','terms','price']) + sec('Contact Methods',['pref','cmMail','cmBulk','cmPhone','cmFax','cmPost']) + '<div class="sec"><h4>Record Information</h4><div class="cols">'+recInfo()+'</div></div>';
+  else panel = notesHTML() + newNoteHTML();
+  const info = '<div class="tabs" role="tablist">'+tabs.map(t => '<button class="tab" role="tab" type="button" data-tab="'+t[0]+'" aria-selected="'+(ui.tab===t[0])+'">'+t[1]+'</button>').join('')+'</div><div class="panel" role="tabpanel">'+panel+'</div>';
+  return '<div class="crmhead">'+ic('i-building').replace('<svg','<svg width="32" height="32"')+'<div><div class="ent">Account</div><div class="rec" data-bind="name">'+esc(nameNow())+'</div></div><div class="brand">'+V.brand+'</div></div>'+
+    '<div class="menubar">'+menuHTML('File',file)+menuHTML('Actions',actions)+menuHTML('Help',help)+'</div>'+
+    '<div class="toolbar"><button class="tb" type="button" data-cmd="save">'+ic('i-save')+'Save</button><button class="tb" type="button" data-cmd="saveclose">'+ic('i-saveclose')+'Save and Close</button>'+
+      (V.saveNew ? '<button class="tb" type="button" data-cmd="savenew">'+ic('i-savenew')+'<span class="lbl-opt">Save and New</span></button>' : '')+
+      '<span class="sep"></span><button class="tb" type="button" data-cmd="print" title="Print">'+ic('i-print')+'<span class="lbl-opt">Print</span></button><span class="sep"></span>'+
+      '<button class="tb" type="button" data-cmd="assign">'+ic('i-person')+'Assign</button><button class="tb" type="button" data-cmd="delete" title="Delete">'+ic('i-del')+'<span class="lbl-opt">Delete</span></button></div>'+
+    '<div class="body"><nav class="leftnav" aria-label="Record navigation">'+nav+'</nav><div class="content">'+(ui.view==='info' ? info : classicGridHTML(GRIDS[ui.view]))+'</div>'+(V.fa ? faHTML() : '')+'</div>'+
+    '<div class="statusbar"><div data-bind="state">Status: '+(S.active?'Active':'Inactive')+'</div><div class="msg" id="stMsg">Done</div><div class="zone">'+ic('i-globe')+'Local intranet</div></div>';
+}
+function faHTML(){
+  const f = F[ui.fa], spec = LK[f.lk];
+  const body = ui.faOpen ? '<div class="fab"><div class="fat">'+esc(f.l)+'</div><div>Click a value to fill in the field.</div><div class="fasub">Most Recently Used</div>'+spec.items.map(i => '<button type="button" data-fapick="'+esc(i[0])+'"'+(S.active?'':' disabled')+'>'+esc(i[0])+'</button>').join('')+'</div>' : '';
+  return '<aside class="fa'+(ui.faOpen?'':' shut')+'" aria-label="Form Assistant"><div class="fah"><button type="button" data-fatoggle aria-label="'+(ui.faOpen?'Hide':'Show')+' Form Assistant">'+(ui.faOpen?'»':'«')+'</button><span>Form Assistant</span></div>'+body+'</aside>';
+}
+
+/* ---------------- CRM 2011 (ribbon) ---------------- */
+const RIB = {
+  account:[
+    ['Save',[['big','saveclose','i-saveclose','Save &amp; Close'],['col',[['save','i-save','Save'],['savenew','i-savenew','Save &amp; New']]]]],
+    ['Collaborate',[['col',[['msg:Add to Queue places this account in a queue so that someone on your team can pick it up.','i-list','Add to Queue'],['assign','i-person','Assign'],['share','i-share','Share']]],['col',[['msg:E-mail a Link opens a new e-mail message that links straight to this record.','i-mail','E-mail a Link']]]]],
+    ['Process',[['col',[['msg:Connect links this account to another record, for example a partner or a competitor.','i-link','Connect'],['msg:Run Workflow starts an on-demand workflow for this account.','i-flow','Run Workflow'],['msg:Start Dialog walks you through a guided script, such as a qualification call.','i-flow','Start Dialog']]]]],
+    ['Data',[['col',[['deactivate', null, null],['delete','i-del','Delete'],['print','i-print','Print Preview']]]]]
+  ],
+  add:[
+    ['Activity',[['col',[['msg:A new task form would open, regarding this account.','i-act','Task'],['msg:A new phone call form would open, regarding this account.','i-phone','Phone Call'],['msg:A new e-mail form would open, regarding this account.','i-mail','E-mail']]],['col',[['msg:A new appointment form would open, regarding this account.','i-act','Appointment'],['msg:A new letter form would open, regarding this account.','i-doc','Letter'],['msg:A new fax form would open, regarding this account.','i-doc','Fax']]]]],
+    ['Note',[['big','note','i-note','Note']]]
+  ],
+  customize:[
+    ['Customize',[['big','msg:Form opens the form editor, where you can move fields, sections and tabs on this form.','i-form','Form'],['big','msg:Customize Entity opens the solution editor for the Account entity.','i-acc','Customize Entity']]]
+  ]
+};
+function ribBtn(spec, big){
+  let [cmd, icon, label] = spec;
+  if(cmd==='deactivate'){ icon = 'i-deact'; label = S.active ? 'Deactivate' : 'Activate'; }
+  const act = cmd.startsWith('msg:') ? 'data-msg="'+esc(cmd.slice(4))+'"' : 'data-cmd="'+cmd+'"';
+  return '<button type="button" class="'+(big?'rbig':'rsm')+'" '+act+'>'+ic(icon)+'<span>'+label+'</span></button>';
+}
+function ribbonGroupsHTML(){
+  return RIB[ui.rtab].map(g => '<div class="rg"><div class="rgc">'+g[1].map(part => part[0]==='big' ? ribBtn(part.slice(1), true) : '<div class="rgcol">'+part[1].map(s => ribBtn(s,false)).join('')+'</div>').join('')+'</div><div class="rgl">'+g[0]+'</div></div>').join('');
+}
+function ribbonHTML(){
+  const file = [['save','Save'],['saveclose','Save &amp; Close'],'-',['print','Print Preview'],['msg:Properties shows who created and last changed this record: '+S.created+' and '+S.mod+'.','Properties'],'-',['help','Help'],['close','Exit']];
+  const info = [['s-general','General'],['s-details','Details'],['s-contacts','Contacts'],['s-notes','Notes &amp; Activities'],['s-prefs','Preferences']];
+  const rel = [['Common',['addresses','activities','history','subaccounts','contacts']],['Sales',['opportunities','quotes','orders','invoices']],['Service',['cases','contracts']],['Marketing',['lists','campaigns']]];
+  const relLabel = id => id==='history' ? 'Closed Activities' : NL[id];
+  const nav = '<div class="fsel">Information</div><h3>Information</h3>'+info.map(i => '<button type="button" data-jump="'+i[0]+'"'+(ui.view==='info' && i[0]==='s-general'?' aria-current="page"':'')+'>'+i[1]+'</button>').join('')+
+    '<h3>Related</h3>'+rel.map(g => '<h5>'+g[0]+'</h5>'+g[1].map(id => '<button type="button" data-nav="'+id+'"'+(ui.view===id?' aria-current="page"':'')+'>'+ic(NI[id])+'<span>'+relLabel(id)+'</span></button>').join('')).join('');
+  const tsec = (id, title, inner) => '<section class="tsec" id="'+id+'"><h2><button type="button" data-collapse aria-label="Collapse '+title+'">▼</button>'+title+'</h2><div class="tbody">'+inner+'</div></section>';
+  const contactsGrid = GRIDS.contacts;
+  const form = '<div class="fhead">'+ic('i-building').replace('<svg','<svg width="32" height="32"')+'<div><div class="ent">Account</div><div class="rec" data-bind="name">'+esc(nameNow())+'</div></div></div>'+
+    '<div class="fscroll">'+
+      tsec('s-general','General', sec('',['name','phone','num','ophone','parent','fax','contact','web','rel','mail']) + sec('Address',['aname','s1','s2','s3','city','state','zip','ctry'])) +
+      tsec('s-details','Details', sec('Professional Information',['terr','cat','ind','own','rev','emp','sic','tick']) + sec('Description',['desc'])) +
+      tsec('s-contacts','Contacts', '<div class="subgrid">'+tableHTML(contactsGrid, contactsGrid.rows, 'grid')+'</div>') +
+      tsec('s-notes','Notes &amp; Activities', notesHTML() + newNoteHTML()) +
+      tsec('s-prefs','Preferences', sec('Contact Methods',['pref','cmMail','cmBulk','cmPhone','cmFax','cmPost']) + sec('Billing',['limit','hold','terms','price']) + sec('Shipping',['ship','frt']) + sec('Internal Information',['owner','lead'])) +
+    '</div>';
+  const rtabs = [['account','Account'],['add','Add'],['customize','Customize']];
+  return '<div class="rb"><div class="rtabs">'+menuHTML('File', file).replace('data-menu','data-menu class="rfile"')+rtabs.map(t => '<button type="button" data-rtab="'+t[0]+'" aria-selected="'+(ui.rtab===t[0])+'">'+t[1]+'</button>').join('')+'</div><div class="rgroups">'+ribbonGroupsHTML()+'</div></div>'+
+    '<div class="body"><nav class="leftnav" aria-label="Record navigation">'+nav+'</nav><div class="content">'+(ui.view==='info' ? form : classicGridHTML(GRIDS[ui.view]))+'</div></div>'+
+    '<div class="statusbar"><div data-bind="state">Status: '+(S.active?'Active':'Inactive')+'</div><div class="msg" id="stMsg">Done</div></div>';
+}
+
+/* ---------------- DYNAMICS 365 ONLINE ---------------- */
+const ORel = ['activities','contacts','opportunities','cases','subaccounts','addresses','quotes','orders','invoices'];
+function uciHTML(){
+  const sm = [[null,[['m-home','Home'],['m-clock','Recent'],['m-pin','Pinned']]],['My Work',[['m-dash','Dashboards'],['m-check','Activities']]],['Customers',[['m-acc','Accounts',1],['m-person','Contacts']]],['Sales',[['m-lead','Leads'],['m-opp','Opportunities']]],['Collateral',[['m-doc','Quotes'],['m-doc','Orders'],['m-doc','Invoices'],['m-box','Products']]]];
+  const sitemap = sm.map(g => (g[0] ? '<h6>'+g[0]+'</h6>' : '') + g[1].map(i => '<button type="button"'+(i[2]?' aria-current="page" data-otab="summary"':' data-msg="'+i[1]+' opens the '+i[1].toLowerCase()+' page of the Sales Hub app. Only the account form is part of this recreation."')+'>'+ic(i[0])+'<span>'+i[1]+'</span></button>').join('')).join('');
+  const cmd = (id, icon, label) => '<button class="cmd" type="button" '+(id.startsWith('msg:') ? 'data-msg="'+esc(id.slice(4))+'"' : 'data-cmd="'+id+'"')+'>'+ic(icon)+(label?'<span>'+label+'</span>':'')+'</button>';
+  const cmdbar = '<div class="cmdbar">'+cmd('msg:Back returns to the Active Accounts view.','m-back','')+'<span class="cmdsep"></span>'+cmd('save','m-save','Save')+cmd('saveclose','m-saveclose','Save &amp; Close')+cmd('savenew','m-plus','New')+cmd('deactivate','m-deact', S.active?'Deactivate':'Activate')+cmd('msg:Connect links this account to another record, such as a partner or a competitor.','m-link','Connect')+cmd('assign','m-assign','Assign')+cmd('share','m-share','Share')+cmd('msg:Email a Link opens a new email in Outlook with a link to this account.','m-mail','Email a Link')+cmd('refresh','m-refresh','Refresh')+cmd('delete','m-more','Delete')+'</div>';
+  const ownerLink = S.owner ? '<a href="#" data-lk="owner">'+esc(S.owner)+'</a>' : '---';
+  const head = '<div class="ohead"><div class="oavatar">'+esc(initials(nameNow()))+'</div><div><div class="oname"><span data-bind="name">'+esc(nameNow())+'</span> <span class="osaved" data-bind="saved">- '+(S.dirty?'Unsaved':'Saved')+'</span></div><div class="oform">Account · Account</div></div>'+
+    '<div class="ohf"><div><div class="hv" data-bind="rev">'+(S.rev ? '€ '+esc(S.rev) : '---')+'</div><div class="hl">Annual Revenue</div></div><div><div class="hv" data-bind="emp">'+(esc(S.emp)||'---')+'</div><div class="hl">Number of Employees</div></div><div><div class="hv">'+ownerLink+'</div><div class="hl">Owner</div></div></div></div>';
+  const relSel = ui.view!=='info';
+  const tabs = '<div class="otabs" role="tablist"><button class="otab" role="tab" type="button" data-otab="summary" aria-selected="'+(!relSel && ui.tab==='summary')+'">Summary</button><button class="otab" role="tab" type="button" data-otab="details" aria-selected="'+(!relSel && ui.tab==='details')+'">Details</button>'+
+    (relSel ? '<button class="otab" role="tab" type="button" aria-selected="true">'+esc(GRIDS[ui.view].title)+'</button>' : '')+
+    '<div class="menu"><button class="otab" type="button" data-menu aria-haspopup="true" aria-expanded="false">Related '+ic('m-chev').replace('<svg','<svg style="width:12px;height:12px;vertical-align:-1px"')+'</button><div class="dropdown" role="menu">'+ORel.map(id => '<button type="button" role="menuitem" data-nav="'+id+'">'+(id==='addresses'?'Addresses':NL[id])+'</button>').join('')+'</div></div></div>';
+  const card = (title, inner, btn) => '<div class="card"><h3>'+title+(btn||'')+'</h3>'+inner+'</div>';
+  const rows = ids => ids.map(fieldHTML).join('');
+  let content;
+  if(relSel){
+    const g = GRIDS[ui.view], r = g.rows;
+    content = '<div class="ogrid two" style="grid-template-columns:1fr">'+card(esc(g.title), '<div class="gtools"><button class="cmd" type="button" data-msg="A new '+esc(g.entity.toLowerCase())+' form would open, with '+esc(nameNow())+' already filled in.">'+ic('m-plus')+'<span>New '+esc(g.entity)+'</span></button><button class="cmd" type="button" data-cmd="refresh">'+ic('m-refresh')+'<span>Refresh</span></button></div><div class="owrap">'+tableHTML(g, r, 'ogt')+'</div><div class="gcount" data-count>Rows: '+r.length+'</div>')+'</div>';
+  } else if(ui.tab==='summary'){
+    const pc = S.contact ? '<div class="pcard"><div class="pav">'+esc(initials(S.contact))+'</div><div><div><a href="#" data-open="contact" style="color:#0f6cbd;font-weight:600;text-decoration:none">'+esc(S.contact)+'</a></div><div class="tmeta">CEO</div></div></div>' : '<div class="tmeta">No primary contact selected.</div>';
+    const cg = GRIDS.contacts;
+    content = '<div class="ogrid"><div class="ocol">'+card('Account information', rows(['name','phone','ophone','fax','mail','web','parent','rel']))+card('Address', rows(['s1','s2','s3','city','state','zip','ctry']))+'</div>'+
+      '<div class="ocol">'+card('Timeline', timelineHTML(), '<button type="button" data-cmd="note" aria-label="Add a note">'+ic('m-plus')+'</button>')+'</div>'+
+      '<div class="ocol">'+card('Primary Contact', rows(['contact'])+pc)+card('Contacts', '<div class="owrap">'+tableHTML({cols:['Full Name','Email'], title:'contacts'}, cg.rows.map(x => [x[0], x[3]]), 'ogt')+'</div>', '<button type="button" data-nav="contacts" aria-label="Open all contacts">'+ic('m-more')+'</button>')+'</div></div>';
+  } else {
+    content = '<div class="ogrid two"><div class="ocol">'+card('Company profile', rows(['ind','sic','own','emp','rev','terr','cat','num','tick']))+card('Description', rows(['desc']))+'</div>'+
+      '<div class="ocol">'+card('Contact preferences', rows(['pref','cmMail','cmBulk','cmPhone','cmFax','cmPost']))+card('Billing', rows(['limit','hold','terms','price']))+card('Shipping', rows(['aname','ship','frt']))+card('Internal', rows(['owner','lead']))+'</div></div>';
+  }
+  const copilot = ui.copilot && !V.u19 ? copilotHTML() : '';
+  return '<div class="appbar"><button type="button" aria-label="App launcher" data-msg="The app launcher lists your Microsoft 365 apps.">'+ic('m-waffle')+'</button><span class="appname">Dynamics 365</span><span class="appsub">Sales Hub</span><div class="gsearch">'+ic('m-search')+'Search</div><div class="appicons">'+(V.u19 ? '' : '<button type="button" data-cmd="copilot" aria-label="Copilot" aria-pressed="'+ui.copilot+'">'+ic('m-spark')+'</button>')+'<button type="button" aria-label="Quick create" data-msg="Quick Create lets you add a contact, lead or opportunity without leaving this page.">'+ic('m-plus')+'</button><button type="button" aria-label="Settings" data-cmd="help">'+ic('m-gear')+'</button><span class="avatar" title="Lasse Räty">LR</span></div></div>'+
+    '<div class="obody"><nav class="sitemap" aria-label="Site map">'+sitemap+(V.u19 ? '<button type="button" class="areasw" data-msg="The area switcher moves between Sales, Service, Marketing and Settings."><span class="aico">S</span><span>Sales</span></button>' : '')+'</nav><main class="omain">'+cmdbar+'<div class="oscroll">'+head+tabs+content+'</div><div class="ofoot"><span data-bind="state">'+(S.active?'Active':'Inactive')+'</span><span class="msg" id="stMsg"></span><span class="unsaved" data-bind="unsaved">'+(S.dirty?'Unsaved changes':'')+'</span><button type="button" class="fsave" data-cmd="save" aria-label="Save">'+ic('m-save')+'</button></div></main>'+copilot+'</div>';
+}
+function initials(n){ const p = n.replace(/\b(Oy|Ab|Oyj|Ltd|Inc\.?)\b/gi,'').trim().split(/\s+/).filter(Boolean); return ((p[0]||'?')[0] + (p[1] ? p[1][0] : (p[0]||'').slice(1,2))).toUpperCase(); }
+function timelineHTML(){
+  const items = S.notes.slice().reverse().map(n => ['m-note','Note by '+n.who+' · '+n.when, n.text])
+    .concat(GRIDS.activities.rows.map(r => [r[1]==='Phone Call'?'m-phone':r[1]==='Appointment'?'m-cal':'m-check', r[1]+' · Due '+r[2], r[0]]))
+    .concat(GRIDS.history.rows.map(r => [r[1]==='E-mail'?'m-mail':'m-check', r[1]+' · '+r[3]+' '+r[2], r[0]]));
+  return '<div class="tlnew"><textarea id="noteText" rows="2" placeholder="Enter a note…" aria-label="Note"></textarea><button class="obtn primary" type="button" data-cmd="addnote">Add note</button></div>'+
+    items.map(i => '<div class="tli"><div class="tic">'+ic(i[0])+'</div><div><div class="tmeta">'+esc(i[1])+'</div><div class="ttext">'+esc(i[2])+'</div></div></div>').join('');
+}
+function copilotHTML(){
+  const open = GRIDS.opportunities.rows.length, cases = GRIDS.cases.rows.filter(r => r[3]==='Active').length;
+  const last = S.notes[S.notes.length-1];
+  const where = [S.city, S.ctry].filter(Boolean).join(', ');
+  const txt = nameNow()+' is '+(S.rel ? 'a '+S.rel.toLowerCase()+' account' : 'an account')+(S.ind ? ' in '+S.ind.toLowerCase() : '')+(where ? ', based in '+where : '')+(S.emp ? ', with '+S.emp+' employees' : '')+'. It has '+open+' open opportunities and '+cases+' active case. The latest note says: “'+(last ? last.text : 'no notes yet')+'”';
+  const chip = t => '<button type="button" data-msg="Copilot answers are not part of this recreation.">'+t+'</button>';
+  return '<aside class="copilot" aria-label="Copilot"><div class="cph">'+ic('m-spark')+'Copilot<button type="button" data-cmd="copilot" aria-label="Close Copilot">×</button></div><div class="cpb"><div class="cpcard"><b>Summary of '+esc(nameNow())+'</b><p>'+esc(txt)+'</p></div><div class="cpchips">'+chip('What’s new with this account?')+chip('Prepare me for my next meeting')+chip('Show open opportunities')+'</div><div class="cpnote">Summary built from the fields on this form. AI-generated content may be incorrect.</div></div></aside>';
+}
+
+
+/* ---------------- CRM 2013 / 2016 (flat) ---------------- */
+const sitem = (icon, text, meta) => '<div class="sitem"><div class="sic">'+ic(icon)+'</div><div><div class="stext">'+esc(text)+'</div><div class="smeta">'+esc(meta)+'</div></div></div>';
+function shelfHTML(){
+  if(!ui.fnav) return '';
+  const is16 = V.k==='2016';
+  const tiles = items => '<div class="shelf">'+items.map(i => '<button type="button" class="tile'+(i.sel?' sel':'')+'" '+i.act+'>'+ic(i.icon)+'<span>'+esc(i.label)+'</span></button>').join('')+'</div>';
+  const lists = groups => '<div class="shelf list">'+groups.map(g => '<div><h6>'+g.title+'</h6>'+g.items.map(i => '<button type="button" '+i.act+'>'+ic(i.icon)+'<span>'+esc(i.label)+'</span></button>').join('')+'</div>').join('')+'</div>';
+  let groups;
+  if(ui.fnav==='area'){
+    const mk = (icon, label, sel) => ({icon, label, sel, act: sel ? 'data-flatclose' : 'data-msg="'+label+' opens the '+label.toLowerCase()+' list. Only the account form is part of this recreation."'});
+    groups = [{title:'My Work', items:[mk('m-dash','Dashboards'),mk('m-check','Activities')]},
+              {title:'Customers', items:[mk('m-acc','Accounts',1),mk('m-person','Contacts')]},
+              {title:'Sales', items:[mk('m-lead','Leads'),mk('m-opp','Opportunities'),mk('m-person','Competitors')]},
+              {title:'Collateral', items:[mk('m-doc','Quotes'),mk('m-doc','Orders'),mk('m-doc','Invoices'),mk('m-box','Products')]}];
+  } else if(ui.fnav==='entity'){
+    const rec = [[nameNow(),1],['Contoso Ltd'],['Fabrikam, Inc.'],['Adventure Works Cycles']];
+    groups = [{title:'Recently viewed', items: rec.map(r => ({icon:'m-acc', label:r[0], sel:r[1], act: r[1] ? 'data-nav="info"' : 'data-msg="'+esc(r[0])+' would open in this window."'}))}];
+  } else {
+    const rel = ['info','activities','history','contacts','opportunities','cases','subaccounts','addresses','quotes','orders','invoices'];
+    const icn = {info:'m-acc',activities:'m-check',history:'m-check',contacts:'m-person',opportunities:'m-opp',cases:'m-doc',subaccounts:'m-acc',addresses:'m-home',quotes:'m-doc',orders:'m-doc',invoices:'m-doc'};
+    groups = [{title:'Common', items: rel.map(id => ({icon:icn[id], label: id==='info' ? nameNow() : id==='history' ? 'Closed Activities' : NL[id], sel: ui.view===id, act:'data-nav="'+id+'"'}))}];
+  }
+  return is16 ? lists(groups) : tiles([].concat(...groups.map(g => g.items)));
+}
+function socialHTML(){
+  const tabs = [['posts','Posts'],['activities','Activities'],['notes','Notes']];
+  let body;
+  if(ui.social==='posts'){
+    body = '<div class="snew"><textarea rows="2" placeholder="Enter post here" aria-label="Post"></textarea><button class="fbtn" type="button" data-msg="Posting is not part of this recreation.">Post</button></div>'+
+      sitem('m-acc','Account: Created by Lasse Räty for Account '+nameNow()+'.', S.created);
+  } else if(ui.social==='activities'){
+    body = '<div class="sacts">'+['Phone Call','Task','Email','Appointment'].map(a => '<button type="button" class="fbtn ghost" data-msg="A quick '+a.toLowerCase()+' form would open right here in the activities list.">'+a+'</button>').join('')+'</div>'+
+      GRIDS.activities.rows.map(r => sitem(r[1]==='Phone Call'?'m-phone':r[1]==='Appointment'?'m-cal':'m-check', r[0], r[1]+', due '+r[2])).join('')+
+      GRIDS.history.rows.map(r => sitem(r[1]==='E-mail'?'m-mail':'m-check', r[0], r[1]+', '+r[3].toLowerCase()+' '+r[2])).join('');
+  } else {
+    body = '<div class="snew"><textarea id="noteText" rows="2" placeholder="Enter a note" aria-label="Note"></textarea><button class="fbtn" type="button" data-cmd="addnote">Done</button></div>'+
+      S.notes.slice().reverse().map(n => sitem('m-note', n.text, n.who+', '+n.when)).join('');
+  }
+  return '<div class="soctabs" role="tablist">'+tabs.map(t => '<button type="button" role="tab" data-soc="'+t[0]+'" aria-selected="'+(ui.social===t[0])+'">'+t[1]+'</button>').join('')+'</div><div class="sbody">'+body+'</div>';
+}
+function flatFormHTML(){
+  const rows = ids => ids.map(fieldHTML).join('');
+  const ownerLink = S.owner ? '<a href="#" data-lk="owner">'+esc(S.owner)+'</a>' : V.ph;
+  const head = '<div class="fh"><div><div class="fh-ent">Account : Account</div><div class="fh-name" data-bind="name">'+esc(nameNow())+'</div></div>'+
+    '<div class="fh-hf"><div><div class="hl">Annual Revenue</div><div class="hv" data-bind="rev">'+(S.rev ? '€ '+esc(S.rev) : V.ph)+'</div></div>'+
+    '<div><div class="hl">Number of Employees</div><div class="hv" data-bind="emp">'+(esc(S.emp)||V.ph)+'</div></div>'+
+    '<div><div class="hl">Owner</div><div class="hv">'+ownerLink+'</div></div></div></div>';
+  const cg = GRIDS.contacts;
+  const sub = '<table class="ftbl"><thead><tr><th>Full Name</th><th>Email</th></tr></thead><tbody>'+cg.rows.map(r => '<tr><td><a href="#" data-open="contact">'+esc(r[0])+'</a></td><td>'+esc(r[3]||V.ph)+'</td></tr>').join('')+'</tbody></table>';
+  const qv = S.contact ? '<div class="qv"><div>'+esc(S.contact)+'</div><div class="smeta">CEO</div></div>' : '';
+  return head+
+    '<section class="ftab"><h2>Summary</h2><div class="f3">'+
+      '<div class="fcol"><h3>Account Information</h3>'+rows(['name','phone','ophone','fax','mail','web','parent','rel','tick'])+'<h3>Address</h3>'+rows(['s1','s2','s3','city','state','zip','ctry'])+'</div>'+
+      '<div class="fcol">'+socialHTML()+'</div>'+
+      '<div class="fcol"><h3>Contacts<button type="button" data-nav="contacts" aria-label="Open contacts">'+ic('m-plus')+'</button></h3>'+sub+'<h3>Primary Contact</h3>'+rows(['contact'])+qv+'</div>'+
+    '</div></section>'+
+    '<section class="ftab"><h2>Details</h2><div class="f2">'+
+      '<div class="fcol"><h3>Company Profile</h3>'+rows(['ind','sic','own','emp','rev','terr','cat','num'])+'<h3>Description</h3>'+rows(['desc'])+'</div>'+
+      '<div class="fcol"><h3>Contact Preferences</h3>'+rows(['pref','cmMail','cmBulk','cmPhone','cmFax','cmPost'])+'<h3>Billing</h3>'+rows(['limit','hold','terms','price'])+'<h3>Shipping</h3>'+rows(['aname','ship','frt'])+'<h3>Internal Information</h3>'+rows(['owner','lead'])+'</div>'+
+    '</div></section>';
+}
+function flatGridHTML(g){
+  return '<div class="fgv"><div class="fh"><div><div class="fh-ent"><a href="#" data-nav="info">'+esc(nameNow())+'</a></div><div class="fh-name">'+esc(g.title)+'</div></div></div>'+
+    '<div class="fgt"><button class="fcb" type="button" data-msg="A new '+esc(g.entity.toLowerCase())+' form would open, with '+esc(nameNow())+' already filled in.">'+ic('m-plus')+'<span>Add New '+esc(g.entity)+'</span></button></div>'+
+    '<div class="owrap">'+tableHTML(g, g.rows, 'ftbl')+'</div><div class="gcount" data-count>Rows: '+g.rows.length+'</div></div>';
+}
+function flatHTML(){
+  const is16 = V.k==='2016';
+  const cb = (act, icon, label) => '<button class="fcb" type="button" '+(act.startsWith('msg:') ? 'data-msg="'+esc(act.slice(4))+'"' : 'data-cmd="'+act+'"')+(label?'':' aria-label="More commands"')+'>'+ic(icon)+(label?'<span>'+label+'</span>':'')+'</button>';
+  const nb = (key, label, cls) => '<button class="nb-item'+(cls||'')+(ui.fnav===key?' on':'')+'" type="button" data-flatnav="'+key+'" aria-expanded="'+(ui.fnav===key)+'">'+label+ic('m-chev')+'</button>';
+  const nav = '<div class="navbar">'+
+    (is16 ? '<button class="nb-ico" type="button" aria-label="App launcher" data-msg="The Office 365 app launcher lists your Office 365 apps.">'+ic('m-waffle')+'</button>' : '')+
+    '<span class="nb-logo">Microsoft Dynamics CRM</span>'+
+    nb('area','Sales',' area')+nb('entity','Accounts')+nb('record','<span data-bind="name">'+esc(nameNow())+'</span>')+
+    '<div class="nb-right">'+(is16 ? '<button type="button" aria-label="Recently viewed" data-flatnav="entity">'+ic('m-clock')+'</button>' : '')+
+      '<button type="button" aria-label="Search" data-msg="Search finds records across accounts, contacts, leads and opportunities.">'+ic('m-search')+'</button>'+
+      '<button type="button" aria-label="Create" data-msg="Create opens a Quick Create form for a new account, contact, lead or opportunity.">'+ic('m-plus')+'</button>'+
+      '<span class="nb-user">Lasse Räty<small>BOFOR</small></span>'+
+      '<button type="button" aria-label="Help" data-cmd="help">'+ic('m-gear')+'</button></div></div>';
+  const cmds = '<div class="fcmd">'+cb('savenew','m-plus','New')+cb('deactivate','m-deact', S.active?'Deactivate':'Activate')+
+    cb('msg:Connect links this account to another record, such as a partner or a competitor.','m-link','Connect')+
+    cb('msg:Add to Marketing List adds this account to a static marketing list.','m-check','Add to Marketing List')+
+    cb('assign','m-assign','Assign')+cb('msg:Email a Link opens a new email message with a link to this account.','m-mail','Email a Link')+
+    cb('delete','m-deact','Delete')+cb('msg:More commands: Share, Run Workflow, Start Dialog, Run Report and Print Preview.','m-more','')+'</div>';
+  return nav+shelfHTML()+cmds+
+    '<div class="fscroll2">'+(ui.view==='info' ? flatFormHTML() : flatGridHTML(GRIDS[ui.view]))+'</div>'+
+    '<div class="ffoot"><span data-bind="state">'+(S.active?'Active':'Inactive')+'</span><span class="msg" id="stMsg"></span><span class="unsaved" data-bind="unsaved">'+(S.dirty?'unsaved changes':'')+'</span><button type="button" data-cmd="save" aria-label="Save">'+ic('m-save')+'</button></div>';
+}
+
+
+/* ---------------- MOBILE CLIENTS ---------------- */
+const isMobile = () => MODE==='mobile' && !!V.mob;
+const MLIST = [['Adventure Works Cycles','Bothell'],['Contoso Ltd','Seattle'],['Fabrikam, Inc.','Redmond']];
+const mlist = () => [[nameNow(), S.city || '', '1']].concat(MLIST.map(r => [r[0], r[1], r[0]]));
+const MGEN = ['name','phone','mail','web','parent','contact','rel'], MADDR = ['aname','s1','zip','city','ctry'], MDET = ['ind','own','emp','rev','terr','desc'], MADM = ['owner','pref'];
+const REL_M = ['contacts','activities','opportunities','cases','addresses','subaccounts'];
+const relName = id => id==='addresses' ? 'More Addresses' : NL[id];
+function mfield(id){
+  const f = F[id], L = labelHTML(id);
+  return '<div class="mf'+(f.ta?' full':'')+'"><label'+((f.lk||f.rd)?'':' for="f-'+id+'"')+L.cls+'>'+L.text+'</label><div class="mc">'+control(id)+'</div></div>';
+}
+const mfields = ids => ids.map(mfield).join('');
+const mrelList = () => '<div class="mrel">'+REL_M.map(id => '<button type="button" data-mrel="'+id+'"><span>'+relName(id)+'</span><b>'+GRIDS[id].rows.length+'</b></button>').join('')+'</div>';
+function mgrid(g){
+  if(!g.rows.length) return '<p class="mempty">There are no '+esc(g.title.toLowerCase())+' yet.</p>';
+  return '<ul class="mitems">'+g.rows.map(r => '<li><button type="button" data-msg="“'+esc(r[0])+'” would open in its own form."><span class="mi1">'+esc(r[0])+'</span><span class="mi2">'+esc(g.cols[1]+': '+(r[1]||'–'))+'</span></button></li>').join('')+'</ul>';
+}
+function mnotes(){
+  return '<div class="mnotes"><textarea id="noteText" rows="3" placeholder="New note" aria-label="New note"></textarea><button class="mbtn" type="button" data-cmd="addnote">Add note</button>'+
+    S.notes.slice().reverse().map(n => '<div class="mnote"><div class="mnm">'+esc(n.who)+', '+esc(n.when)+'</div><div class="mnt">'+esc(n.text)+'</div></div>').join('')+'</div>';
+}
+const MPOP = () => [['save','Save'],['call','Call'],['email','E-mail'],['assign','Assign…'],['deactivate', S.active ? 'Deactivate' : 'Activate']];
+function mpop(){
+  if(!ui.mmenu) return '';
+  return '<div class="mpop" role="menu">'+MPOP().map(i => '<button type="button" role="menuitem" data-cmd="'+i[0]+'">'+i[1]+'</button>').join('')+'</div>';
+}
+function copilotText(){
+  const open = GRIDS.opportunities.rows.length, cases = GRIDS.cases.rows.filter(r => r[3]==='Active').length;
+  const last = S.notes[S.notes.length-1], where = [S.city, S.ctry].filter(Boolean).join(', ');
+  return nameNow()+' is '+(S.rel ? 'a '+S.rel.toLowerCase()+' account' : 'an account')+(S.ind ? ' in '+S.ind.toLowerCase() : '')+(where ? ', based in '+where : '')+(S.emp ? ', with '+S.emp+' employees' : '')+'. It has '+open+' open opportunities and '+cases+' active case.\n\nLatest note: “'+(last ? last.text : 'no notes yet')+'”\n\nSummary built from the fields on this form. AI-generated content may be incorrect.';
+}
+
+function deviceHTML(){
+  const d = V.dev, hid = ' aria-hidden="true"';
+  const keys3 = round => '<div class="hw hw-keys"'+hid+'>'+ic('m-back')+'<i class="hb"></i>'+ic('m-search')+'</div>';
+  const top = d==='pda' ? '<div class="hw hw-top"'+hid+'><span class="spk"></span><span class="led"></span></div>'
+    : (d==='wm' || d==='candy') ? '<div class="hw hw-top"'+hid+'><span class="spk"></span></div>'
+    : (d==='touch' || d==='slab13') ? '<div class="hw hw-top tall"'+hid+'><span class="spk"></span></div>' : '';
+  const bottom = d==='pda' ? '<div class="hw hw-pda"'+hid+'><i></i><i></i><span class="dpad"></span><i></i><i></i></div>'
+    : d==='wm' ? '<div class="hw hw-wm"'+hid+'><i></i><i class="call"></i><span class="dpad"></span><i class="end"></i><i></i></div>'
+    : d==='candy' ? '<div class="hw hw-candy"'+hid+'><div class="crow"><i></i><i class="call"></i><span class="dpad sm"></span><i class="end"></i><i></i></div><div class="keys">'+'123456789*0#'.split('').map(k => '<i>'+k+'</i>').join('')+'</div></div>'
+    : (d==='touch' || d==='slab13') ? keys3() : '';
+  const body = V.mfam==='pda' ? pdaHTML() : V.mfam==='mex' ? mexHTML() : V.mfam==='app' ? appHTML() : muciHTML();
+  return '<div class="device dv-'+d+'">'+top+'<div class="screen sc-'+V.mfam+' mv-'+V.tok+'">'+body+'<div class="mtoast" id="stMsg" role="status"></div></div>'+bottom+'</div>';
+}
+
+/* Pocket PC (1.2) and Windows Mobile (3.0) */
+function pdaHTML(){
+  const wm = V.k==='3.0', rec = ui.mscreen==='record';
+  const top = '<div class="pda-top"><span class="pda-t">'+(wm ? 'CRM Mobile' : 'Microsoft CRM')+'</span><span class="clock">--:--</span>'+(!wm && rec ? '<button type="button" class="pda-ok" data-mback aria-label="Close">ok</button>' : '')+'</div>';
+  let body;
+  if(!rec){
+    body = '<div class="pda-h"><b>Accounts</b><select aria-label="View"><option>My Active Accounts</option><option>All Accounts</option></select></div>'+
+      '<div class="mscroll"><table class="pda-list"><thead><tr><th>Account Name</th><th>City</th></tr></thead><tbody>'+
+      mlist().map(r => '<tr tabindex="0" data-mopen="'+esc(r[2])+'"><td>'+esc(r[0])+'</td><td>'+esc(r[1])+'</td></tr>').join('')+'</tbody></table></div>';
+  } else if(ui.mview){
+    const g = GRIDS[ui.mview];
+    body = '<div class="pda-h"><b>'+esc(g.title)+'</b><a href="#" data-mback>Back</a></div><div class="mscroll pda-pane">'+mgrid(g)+'</div>';
+  } else {
+    const tabs = [['gen','General'],['addr','Address'],['det','Details'],['rel','Related'],['notes','Notes']];
+    const pane = ui.mtab==='addr' ? mfields(MADDR) : ui.mtab==='det' ? mfields(MDET.concat(MADM)) : ui.mtab==='rel' ? mrelList() : ui.mtab==='notes' ? mnotes() : mfields(MGEN);
+    body = '<div class="pda-h"><b data-bind="name">'+esc(nameNow())+'</b></div><div class="mscroll pda-pane">'+pane+'</div>'+
+      '<div class="pda-tabs" role="tablist">'+tabs.map(t => '<button type="button" role="tab" data-mtab="'+t[0]+'" aria-selected="'+(ui.mtab===t[0])+'">'+t[1]+'</button>').join('')+'</div>';
+  }
+  const bar = wm
+    ? '<div class="pda-soft">'+(rec ? '<button type="button" data-mback>Back</button><button type="button" data-mmenu aria-expanded="'+ui.mmenu+'">Menu</button>' : '<button type="button" data-msg="A new account form would open.">New</button><button type="button" data-msg="Menu: Synchronize, Options and About CRM Mobile.">Menu</button>')+'</div>'
+    : '<div class="pda-bar"><button type="button" data-msg="A new account form would open.">New</button>'+(rec ? '<button type="button" data-mmenu aria-expanded="'+ui.mmenu+'">Edit</button>' : '')+'<button type="button" data-msg="Tools: Synchronize, Options and About Microsoft CRM Mobile.">Tools</button></div>';
+  return top+'<div class="pda-body">'+body+'</div>'+(rec && !ui.mview ? mpop() : '')+bar;
+}
+
+/* Mobile Express (4.0, 2011) */
+function mexHTML(){
+  const is11 = V.k==='2011', rec = ui.mscreen==='record';
+  const url = (is11 ? 'https://bofor.crm4.dynamics.com/m/' : 'http://crm.bofor.local/m/') + (!rec ? 'home.aspx' : ui.mview ? 'rl.aspx' : ui.medit ? 'ef.aspx?etn=account&mode=edit' : 'ef.aspx?etn=account');
+  const crumb = '<div class="mex-crumb"><a href="#" data-mscreen="list">Home</a> &gt; '+(rec ? '<a href="#" data-mscreen="list">Accounts</a> &gt; '+(ui.mview ? '<a href="#" data-mback>'+esc(nameNow())+'</a>' : '<span data-bind="name">'+esc(nameNow())+'</span>') : 'Accounts')+'</div>';
+  let body;
+  if(!rec){
+    body = '<h2>Accounts</h2><div class="mex-view"><select aria-label="View"><option>My Active Accounts</option><option>Inactive Accounts</option></select><button type="button" class="mex-btn">Go</button></div>'+
+      '<ul class="mex-ul">'+mlist().map(r => '<li><a href="#" data-mopen="'+esc(r[2])+'">'+esc(r[0])+'</a></li>').join('')+'</ul><div class="mex-links"><a href="#" data-msg="A new account form would open.">New Account</a></div>';
+  } else if(ui.mview){
+    const g = GRIDS[ui.mview];
+    body = '<h2>'+esc(g.title)+'</h2>'+(g.rows.length ? '<ul class="mex-ul">'+g.rows.map(r => '<li><a href="#" data-msg="“'+esc(r[0])+'” would open.">'+esc(r[0])+'</a><br><small>'+esc(r[1])+'</small></li>').join('')+'</ul>' : '<p class="mex-p">No records found.</p>');
+  } else if(ui.medit){
+    body = '<h2>Edit Account</h2>'+mfields(MGEN.concat(MADDR, ['ind','emp','desc']))+'<div class="mex-actions"><button type="button" class="mex-btn" data-cmd="mexsave">Save</button><button type="button" class="mex-btn" data-medit>Cancel</button></div>';
+  } else {
+    const ro = id => { const v = S[id]; return '<div class="mex-f"><b>'+esc(F[id].l)+'</b>'+(v ? (F[id].lk ? '<a href="#" data-open="'+id+'">'+esc(v)+'</a>' : esc(v)) : '&nbsp;')+'</div>'; };
+    body = '<h2>Account: <span data-bind="name">'+esc(nameNow())+'</span></h2><div class="mex-links"><a href="#" data-medit>Edit</a> | <a href="#" data-cmd="call">Call</a> | <a href="#" data-cmd="email">E-mail</a></div>'+
+      MGEN.concat(MADDR, ['ind','emp','owner']).map(ro).join('')+
+      '<h3>Related</h3><ul class="mex-ul">'+REL_M.map(id => '<li><a href="#" data-mrel="'+id+'">'+relName(id)+'</a> ('+GRIDS[id].rows.length+')</li>').join('')+'</ul>';
+  }
+  return '<div class="mex-status"><span>▂▄▆</span><span class="clock">--:--</span></div><div class="mex-chrome"><span class="mex-url">'+esc(url)+'</span></div>'+
+    '<div class="mscroll mex-page"><div class="mex-head">Microsoft Dynamics CRM</div>'+crumb+body+'<div class="mex-foot">© '+(is11 ? '2011' : '2009')+' Microsoft Corporation</div></div>';
+}
+
+/* CRM for phones (2013) and the 2015 Update 1 phone app (2016) */
+function appHTML(){
+  const is16 = V.k==='2016', rec = ui.mscreen==='record';
+  const title = !rec ? (is16 ? 'Accounts' : 'MICROSOFT DYNAMICS CRM') : ui.mview ? GRIDS[ui.mview].title : nameNow();
+  const btn = (act, icon, label) => '<button type="button" '+act+'><span class="ring">'+ic(icon)+'</span>'+label+'</button>';
+  const head = '<div class="ap-head">'+(rec ? '<button type="button" data-mback aria-label="Back">'+ic('m-back')+'</button>' : (is16 ? '<button type="button" aria-label="Navigation" data-msg="The navigation menu lists Dashboards, Activities, Accounts, Contacts, Leads and Opportunities.">'+ic('m-waffle')+'</button>' : ''))+
+    '<span class="ap-title'+(is16 ? '' : ' v2013-t')+'"'+(rec && !ui.mview ? ' data-bind="name"' : '')+'>'+esc(title)+'</span><button type="button" aria-label="Search" data-msg="Search finds accounts, contacts, leads and opportunities.">'+ic('m-search')+'</button></div>';
+  let body, bar;
+  if(!rec){
+    body = (is16 ? '' : '<div class="ap-big">accounts</div>')+'<ul class="ap-list">'+mlist().map(r => '<li><button type="button" data-mopen="'+esc(r[2])+'"><span class="ap-l1">'+esc(r[0])+'</span><span class="ap-l2">'+esc(r[1])+'</span></button></li>').join('')+'</ul>';
+    bar = btn('data-msg="A new account form would open."','m-plus','New')+btn('data-msg="Search finds accounts, contacts, leads and opportunities."','m-search','Search');
+  } else if(ui.mview){
+    body = '<div class="ap-pane">'+mgrid(GRIDS[ui.mview])+'</div>';
+    bar = btn('data-msg="A new '+esc(GRIDS[ui.mview].entity.toLowerCase())+' form would open, with '+esc(nameNow())+' already filled in."','m-plus','New')+btn('data-mback','m-back','Back');
+  } else {
+    const tabs = [['summary','Summary'],['details','Details'],['related','Related']];
+    const pane = ui.mtab==='details' ? '<h4>Company Profile</h4>'+mfields(MDET)+'<h4>Internal</h4>'+mfields(MADM)
+      : ui.mtab==='related' ? mrelList()
+      : '<h4>Account Information</h4>'+mfields(MGEN)+'<h4>Address</h4>'+mfields(MADDR)+'<h4>Notes</h4>'+mnotes();
+    body = '<div class="ap-big" data-bind="name">'+esc(nameNow())+'</div><div class="ap-sub">Account</div>'+
+      '<div class="ap-pivot" role="tablist">'+tabs.map(t => '<button type="button" role="tab" data-mtab="'+t[0]+'" aria-selected="'+(ui.mtab===t[0])+'">'+t[1]+'</button>').join('')+'</div><div class="ap-pane">'+pane+'</div>';
+    bar = btn('data-cmd="save"','m-save','Save')+btn('data-cmd="call"','m-phone','Call')+btn('data-cmd="email"','m-mail','Email')+btn('data-mmenu aria-expanded="'+ui.mmenu+'"','m-more','More');
+  }
+  return '<div class="ap-status">'+(is16 ? '<span>▂▄▆</span>' : '')+'<span class="clock">--:--</span></div>'+head+'<div class="mscroll">'+body+'</div>'+(rec && !ui.mview ? mpop() : '')+'<div class="ap-bar">'+bar+'</div>';
+}
+
+/* Dynamics 365 for phones: Unified Interface 2019 and the new look (preview) */
+function muciHTML(){
+  const nl = !V.u19, rec = ui.mscreen==='record';
+  const title = !rec ? 'Accounts' : ui.mview ? GRIDS[ui.mview].title : nameNow();
+  const cmd = (act, icon, label) => '<button type="button" '+act+'>'+ic(icon)+'<span>'+label+'</span></button>';
+  const head = '<div class="mu-head">'+(rec ? '<button type="button" data-mback aria-label="Back">'+ic('m-back')+'</button>' : '<button type="button" aria-label="Site map" data-msg="The site map lists Home, Recent, Pinned, Accounts, Contacts, Leads and Opportunities.">'+ic('m-waffle')+'</button>')+
+    '<span class="mu-title"'+(rec && !ui.mview ? ' data-bind="name"' : '')+'>'+esc(title)+'</span>'+
+    (nl ? '<button type="button" data-cmd="mcopilot" aria-label="Copilot">'+ic('m-spark')+'</button>' : '')+
+    '<button type="button" aria-label="Search" data-msg="Search finds rows across accounts, contacts, leads and opportunities.">'+ic('m-search')+'</button></div>';
+  let body, bar;
+  if(!rec){
+    body = '<div class="mu-view">Active Accounts '+ic('m-chev')+'</div><ul class="mu-list">'+mlist().map(r => '<li><button type="button" data-mopen="'+esc(r[2])+'"><span class="mu-lav">'+esc(initials(r[0]))+'</span><span><span class="mu-l1">'+esc(r[0])+'</span><span class="mu-l2">'+esc(r[1])+'</span></span></button></li>').join('')+'</ul>';
+    bar = cmd('data-msg="A new account form would open."','m-plus','New')+cmd('data-cmd="refresh"','m-refresh','Refresh');
+  } else if(ui.mview){
+    const g = GRIDS[ui.mview];
+    body = '<div class="mu-pane"><div class="mu-sec">'+mgrid(g)+'</div></div>';
+    bar = cmd('data-msg="A new '+esc(g.entity.toLowerCase())+' form would open, with '+esc(nameNow())+' already filled in."','m-plus','New')+cmd('data-cmd="refresh"','m-refresh','Refresh');
+  } else {
+    const tabs = [['summary','Summary'],['details','Details'],['related','Related']];
+    const sec = (t, inner) => '<div class="mu-sec"><h4>'+t+'</h4>'+inner+'</div>';
+    const pane = ui.mtab==='details' ? sec('Company profile', mfields(MDET))+sec('Internal', mfields(MADM))
+      : ui.mtab==='related' ? sec('Related', mrelList())
+      : sec('Account information', mfields(MGEN))+sec('Address', mfields(MADDR))+sec('Timeline', timelineHTML());
+    body = '<div class="mu-rec"><div class="mu-av">'+esc(initials(nameNow()))+'</div><div><div class="mu-name" data-bind="name">'+esc(nameNow())+'</div><div class="mu-sub">Account <span data-bind="saved">- '+(S.dirty ? 'Unsaved' : 'Saved')+'</span></div></div></div>'+
+      '<div class="mu-tabs" role="tablist">'+tabs.map(t => '<button type="button" role="tab" data-mtab="'+t[0]+'" aria-selected="'+(ui.mtab===t[0])+'">'+t[1]+'</button>').join('')+'</div><div class="mu-pane">'+pane+'</div>';
+    bar = cmd('data-cmd="save"','m-save','Save')+cmd('data-cmd="call"','m-phone','Call')+cmd('data-cmd="email"','m-mail','Email')+cmd('data-mmenu aria-expanded="'+ui.mmenu+'"','m-more','More');
+  }
+  return '<div class="sbar"><span class="clock">--:--</span><span class="cam"></span><span>5G</span></div>'+head+'<div class="mscroll">'+body+'</div>'+(rec && !ui.mview ? mpop() : '')+'<div class="mu-cmd">'+bar+'</div><div class="homebar" aria-hidden="true"><i></i></div>';
+}
+
+/* ---------------- render ---------------- */
+const stage = $('#stage'), scene = $('#scene');
+let ZOOM = null;
+try{ const z = parseFloat(localStorage.getItem('crmZoom')); if(z >= 0.5 && z <= 1.3) ZOOM = z; }catch(e){}
+const autoZoom = () => innerWidth < 1400 ? 0.8 : innerWidth < 1800 ? 0.9 : 1;
+const zoomNow = () => ZOOM || autoZoom();
+function renderZoom(){
+  stage.style.setProperty('--z', zoomNow());
+  $('#zoomc').innerHTML = '<button type="button" data-zoom="-1" aria-label="Zoom out">−</button><button type="button" data-zoom="0" title="'+(ZOOM ? 'Back to automatic zoom' : 'Automatic zoom for this screen')+'">'+Math.round(zoomNow()*100)+' %</button><button type="button" data-zoom="1" aria-label="Zoom in">+</button>';
+}
+addEventListener('resize', () => { if(!ZOOM) renderZoom(); });
+function renderStrip(){
+  $('#vers').innerHTML = VERS.map(v => '<button type="button" data-ver="'+v.tok+'" aria-current="'+(v===V)+'">'+v.k+'<small>'+v.yr+'</small></button>').join('');
+  $('#seg').innerHTML = '<button type="button" data-mode="browser" aria-pressed="'+!isMobile()+'">Browser</button><button type="button" data-mode="mobile" aria-pressed="'+isMobile()+'"'+(V.mob ? '' : ' disabled title="CRM 1.0 had no mobile client"')+'>Mobile</button>';
+  const cap = isMobile() ? V.mob : V.mob ? 'Web client' : 'Web client. Mobile access arrived with CRM 1.2.';
+  $('#mcap').textContent = cap; $('#mcap').title = cap;
+  renderZoom();
+  const cur = $('#vers [aria-current="true"]'); if(cur) cur.scrollIntoView({inline:'nearest', block:'nearest'});
+}
+function render(){
+  const keepScroll = {};
+  ['.panel','.fscroll','.oscroll','.fscroll2','.mscroll'].forEach(s => { const el = scene.querySelector(s); if(el) keepScroll[s] = el.scrollTop; });
+  stage.className = 'stage os-'+V.os+(ui.win!=='open' && !isMobile() ? ' closed' : '')+(isMobile() ? ' mobile' : '');
+  scene.innerHTML = sceneHTML();
+  Object.keys(keepScroll).forEach(s => { const el = scene.querySelector(s); if(el) el.scrollTop = keepScroll[s]; });
+  $('#msgTitle').textContent = V.prod;
+  $('#lkTitle').textContent = V.fam==='uci' ? 'Lookup records' : 'Look Up Records';
+  tick(); refreshChrome();
+}
+function refreshChrome(){
+  const n = nameNow();
+  $$('[data-bind="title"]').forEach(e => e.textContent = winTitle());
+  $$('[data-task]').forEach(e => e.setAttribute('aria-label', winTitle()));
+  $$('[data-bind="name"]').forEach(e => e.textContent = n);
+  $$('[data-bind="saved"]').forEach(e => e.textContent = '- '+(S.dirty ? 'Unsaved' : 'Saved'));
+  $$('[data-bind="unsaved"]').forEach(e => e.textContent = S.dirty ? (V.fam==='flat' ? 'unsaved changes' : 'Unsaved changes') : '');
+  $$('[data-bind="mod"]').forEach(e => e.textContent = S.mod);
+  $$('[data-bind="rev"]').forEach(e => e.textContent = S.rev ? '€ '+S.rev : (V.ph || '---'));
+  $$('[data-bind="emp"]').forEach(e => e.textContent = S.emp || (V.ph || '---'));
+  const av = scene.querySelector('.oavatar, .mu-av'); if(av) av.textContent = initials(n);
+  document.title = n + ' – ' + (V.fam==='uci' ? 'Dynamics 365'+(V.u19?' (Unified Interface)':'') : V.prod+' '+V.k);
+}
+function switchVersion(tok){
+  const v = VERS.find(x => x.tok===tok); if(!v) return;
+  V = v; resetUi(); renderStrip(); render();
+  setHash();
+}
+function setHash(){ try{ history.replaceState(null,'','#'+V.tok+(isMobile() ? '-mobile' : '')); }catch(e){} }
+
+/* ---------------- dialogs ---------------- */
+let msgCb = null;
+function msg(text, kind, onOk, withCancel){
+  $('#msgText').textContent = text;
+  $('#msgIcon').innerHTML = '<use href="#'+(kind==='warn'?'i-warn':'i-infobig')+'"/>';
+  $('#msgIcon').style.display = V.fam==='uci' ? 'none' : '';
+  $('#msgCancel').hidden = !withCancel;
+  msgCb = onOk || null; $('#msgVeil').hidden = false; $('#msgOk').focus();
+}
+$('#msgOk').addEventListener('click', () => { $('#msgVeil').hidden = true; const cb = msgCb; msgCb = null; if(cb) cb(); });
+$('#msgCancel').addEventListener('click', () => { $('#msgVeil').hidden = true; msgCb = null; });
+
+let lkField = null;
+function openLookup(id){
+  if(!S.active){ msg('Activate the account before changing it.', 'warn'); return; }
+  lkField = id; const spec = LK[F[id].lk];
+  $('#lkEntity').textContent = spec.entity; $('#lkCol1').textContent = spec.c1; $('#lkCol2').textContent = spec.c2;
+  $('#lkFind').value = ''; renderLk(''); $('#lkVeil').hidden = false; $('#lkFind').focus();
+}
+function renderLk(q){
+  const spec = LK[F[lkField].lk];
+  const items = spec.items.filter(i => i[0].toLowerCase().includes(q.toLowerCase()));
+  $('#lkBody').innerHTML = items.length ? items.map(i => '<tr data-lkrow><td><input type="radio" name="lkpick" value="'+esc(i[0])+'"'+(i[0]===S[lkField]?' checked':'')+' aria-label="'+esc(i[0])+'"></td><td>'+esc(i[0])+'</td><td>'+esc(i[1])+'</td></tr>').join('')
+    : '<tr><td colspan="3" style="padding:8px;color:#555">No records match “'+esc(q)+'”.</td></tr>';
+}
+$('#lkGo').addEventListener('click', () => renderLk($('#lkFind').value));
+$('#lkFind').addEventListener('keydown', e => { if(e.key==='Enter') renderLk($('#lkFind').value); });
+$('#lkBody').addEventListener('click', e => { const tr = e.target.closest('tr[data-lkrow]'); if(tr) tr.querySelector('input').checked = true; });
+$('#lkBody').addEventListener('dblclick', e => { if(e.target.closest('tr[data-lkrow]')) $('#lkOk').click(); });
+$('#lkOk').addEventListener('click', () => {
+  const r = document.querySelector('input[name=lkpick]:checked');
+  $('#lkVeil').hidden = true;
+  if(r && r.value !== S[lkField]) setField(lkField, r.value, true);
+});
+$('#lkCancel').addEventListener('click', () => $('#lkVeil').hidden = true);
+$('#lkRemove').addEventListener('click', () => {
+  $('#lkVeil').hidden = true;
+  if(F[lkField].req==='r'){ msg('You must provide a value for '+F[lkField].l+'.', 'warn'); return; }
+  setField(lkField, '', true);
+});
+function setField(id, val, rerender){ S[id] = val; S.dirty = true; if(rerender) render(); else refreshChrome(); }
+
+/* ---------------- status + commands ---------------- */
+let stTimer;
+function status(t){
+  const el = $('#stMsg'); if(!el) return;
+  clearTimeout(stTimer); el.textContent = t;
+  stTimer = setTimeout(() => { const e = $('#stMsg'); if(e) e.textContent = (V.fam==='uci' || V.fam==='flat' || isMobile()) ? '' : 'Done'; }, 4000);
+}
+function save(then){
+  if(!S.name.trim()){
+    ui.view = 'info'; ui.tab = V.fam==='uci' ? 'summary' : 'general';
+    if(isMobile()){ ui.mscreen = 'record'; ui.mview = null; ui.mmenu = false; if(V.mfam==='mex') ui.medit = true; else ui.mtab = V.mfam==='pda' ? 'gen' : 'summary'; }
+    render();
+    msg(V.fam==='uci' ? 'Account Name: Required fields must be filled in.' : 'You must provide a value for Account Name.', 'warn', () => { const f = $('#f-name'); if(f) f.focus(); });
+    return;
+  }
+  status('Saving…');
+  $$('[data-bind="saved"]').forEach(e => e.textContent = '- Saving…');
+  setTimeout(() => {
+    S.dirty = false; S.mod = fmt(new Date()); refreshChrome();
+    status(V.fam==='uci' ? 'Your changes were saved.' : 'The record was saved.');
+    if(then) then();
+  }, 600);
+}
+function closeWin(force){
+  if(S.dirty && !force){
+    msg('Your changes have not been saved.\n\nClick OK to close the form without saving, or Cancel to stay on the form.', 'warn', () => closeWin(true), true);
+    return;
+  }
+  S.dirty = false; ui.win = 'closed'; render();
+}
+function setActive(on){ S.active = on; render(); status(on ? 'The account was activated.' : 'The account was deactivated.'); }
+const CMD = {
+  save: () => save(),
+  saveclose: () => save(() => closeWin(true)),
+  savenew: () => save(() => msg('A new, empty account form would open now.')),
+  print: () => { try { window.print(); } catch(e) { msg('Printing is not available here.'); } },
+  close: () => closeWin(),
+  assign: () => openLookup('owner'),
+  share: () => msg('Share gives other users or teams Read, Write, Assign or Share rights on this account.'),
+  note: () => {
+    ui.view = 'info';
+    if(V.fam==='classic') ui.tab = 'notes'; else if(V.fam==='uci') ui.tab = 'summary'; else if(V.fam==='flat') ui.social = 'notes';
+    render();
+    if(V.fam==='ribbon'){ const s = $('#s-notes'); if(s){ s.classList.remove('shut'); s.scrollIntoView({block:'start'}); } }
+    const t = $('#noteText'); if(t) t.focus();
+  },
+  addnote: () => {
+    const t = $('#noteText'); const v = t ? t.value.trim() : '';
+    if(!v){ msg('Type the note text before adding it.', 'warn'); return; }
+    S.notes.push({when:fmt(new Date()), who:'Lasse Räty', text:v}); render(); status('Note added.');
+  },
+  deactivate: () => S.active
+    ? msg('Deactivate this account? An inactive account can be viewed but not edited until it is activated again.', 'warn', () => setActive(false), true)
+    : setActive(true),
+  delete: () => msg('You are about to delete this account. Related contacts, activities and notes would be deleted too. Continue?', 'warn', () => closeWin(true), true),
+  help: () => msg(V.req==='color' ? 'Red labels are required fields, blue labels are recommended.\n\nUse the tabs to move between General, Details, Administration and Notes, and the list on the left to see related records.'
+    : V.fam==='flat' ? 'A red asterisk marks a required field and a blue plus marks a recommended one.\n\nUse the nav bar at the top: Sales opens the area, Accounts shows recently viewed records, and the record name lists related records such as contacts and opportunities. Save with the disk icon in the bottom-right corner.'
+    : V.u19 ? 'A red asterisk marks a required field and a blue plus marks a recommended one.\n\nUse Summary and Details for the account’s own fields, and Related for its contacts, activities, opportunities and cases.'
+    : V.req==='star' ? 'A red asterisk marks a required field and a blue plus marks a recommended one.\n\nUse the navigation on the left to jump between sections and related records.'
+    : 'A red asterisk marks a required field.\n\nUse Summary and Details for the account’s own fields, and Related for its contacts, activities, opportunities and cases.'),
+  about: () => msg(V.prod+'\nVersion '+V.k+'\n\nA clickable recreation of the '+V.yr+' user interface, showing the '+nameNow()+' account.'),
+  copilot: () => { ui.copilot = !ui.copilot; render(); },
+  refresh: () => status('Refreshed.'),
+  call: () => msg(S.phone ? 'Calling '+S.phone+'…\n\nThe call would be logged as a phone call activity on '+nameNow()+'.' : 'There is no phone number on this account yet. Add one in the phone field first.'),
+  email: () => msg(S.mail ? 'A new email to '+S.mail+' would open.' : 'There is no email address on this account yet. Add one in the email field first.'),
+  mexsave: () => save(() => { ui.medit = false; render(); }),
+  mcopilot: () => msg(copilotText())
+};
+
+/* ---------------- menus ---------------- */
+function closeMenus(except){ $$('.menu.open').forEach(m => { if(m!==except){ m.classList.remove('open'); m.firstElementChild.setAttribute('aria-expanded','false'); } }); }
+function openMenu(m){ closeMenus(m); m.classList.add('open'); m.firstElementChild.setAttribute('aria-expanded','true'); }
+
+/* ---------------- events ---------------- */
+document.addEventListener('click', e => {
+  const t = e.target;
+  const ver = t.closest('[data-ver]'); if(ver){ switchVersion(ver.dataset.ver); return; }
+  const zb = t.closest('[data-zoom]'); if(zb){ const d = +zb.dataset.zoom; ZOOM = d===0 ? null : Math.min(1.3, Math.max(0.5, Math.round((zoomNow() + d*0.1)*10)/10)); try{ if(ZOOM) localStorage.setItem('crmZoom', ZOOM); else localStorage.removeItem('crmZoom'); }catch(e){} renderZoom(); return; }
+  const md = t.closest('[data-mode]'); if(md){ if(md.disabled) return; MODE = md.dataset.mode; ui.mmenu = false; renderStrip(); render(); setHash(); return; }
+  const mb = t.closest('[data-menu]');
+  if(mb){ const m = mb.parentElement; if(m.classList.contains('open')) closeMenus(); else openMenu(m); return; }
+  if(!t.closest('.dropdown')) closeMenus();
+  if(t.closest('.veil')) return;
+  if(t.closest('[data-mmenu]')){ ui.mmenu = !ui.mmenu; render(); return; }
+  const msc = t.closest('[data-mscreen]'); if(msc){ e.preventDefault(); ui.mscreen = msc.dataset.mscreen; ui.mview = null; ui.medit = false; ui.mmenu = false; render(); return; }
+  const mo = t.closest('[data-mopen]'); if(mo){ e.preventDefault(); if(mo.dataset.mopen==='1'){ ui.mscreen = 'record'; ui.mview = null; ui.mmenu = false; render(); const sc = scene.querySelector('.mscroll'); if(sc) sc.scrollTop = 0; } else msg('“'+mo.dataset.mopen+'” would open here. Only the '+nameNow()+' account is part of this recreation.'); return; }
+  const mt = t.closest('[data-mtab]'); if(mt){ ui.mtab = mt.dataset.mtab; ui.mview = null; ui.mmenu = false; render(); const sc = scene.querySelector('.mscroll'); if(sc) sc.scrollTop = 0; return; }
+  const mr = t.closest('[data-mrel]'); if(mr){ e.preventDefault(); ui.mview = mr.dataset.mrel; ui.mmenu = false; render(); const sc = scene.querySelector('.mscroll'); if(sc) sc.scrollTop = 0; return; }
+  if(t.closest('[data-mback]')){ e.preventDefault(); ui.mmenu = false; if(ui.mview) ui.mview = null; else if(ui.medit) ui.medit = false; else ui.mscreen = 'list'; render(); return; }
+  if(t.closest('[data-medit]')){ e.preventDefault(); ui.medit = !ui.medit; render(); return; }
+
+  const w = t.closest('[data-win]');
+  if(w){
+    const a = w.dataset.win;
+    if(a==='min'){ ui.win = 'min'; render(); }
+    else if(a==='max'){ ui.max = !ui.max; const win = scene.querySelector('.window'); if(win) win.classList.toggle('max', ui.max); }
+    else closeWin();
+    return;
+  }
+  if(t.closest('[data-task]')){ ui.win = ui.win==='open' ? 'min' : 'open'; render(); return; }
+  if(t.closest('[data-desk]')){ ui.win = 'open'; render(); return; }
+
+  const c = t.closest('[data-cmd]'); if(c){ const k = c.dataset.cmd; closeMenus(); if(ui.mmenu){ ui.mmenu = false; render(); } CMD[k](); return; }
+  const m = t.closest('[data-msg]'); if(m){ e.preventDefault(); closeMenus(); msg(m.dataset.msg); return; }
+  const fn = t.closest('[data-flatnav]'); if(fn){ ui.fnav = ui.fnav===fn.dataset.flatnav ? null : fn.dataset.flatnav; render(); return; }
+  if(t.closest('[data-flatclose]')){ ui.fnav = null; render(); return; }
+  const so = t.closest('[data-soc]'); if(so){ ui.social = so.dataset.soc; render(); return; }
+  const n = t.closest('[data-nav]'); if(n){ closeMenus(); ui.view = n.dataset.nav; ui.az = 'All'; ui.fnav = null; render(); const sc = scene.querySelector('.oscroll, .fscroll2'); if(sc) sc.scrollTop = 0; return; }
+  const tb = t.closest('[data-tab]'); if(tb){ ui.tab = tb.dataset.tab; render(); const p = scene.querySelector('.panel'); if(p) p.scrollTop = 0; return; }
+  const ot = t.closest('[data-otab]'); if(ot){ ui.view = 'info'; ui.tab = ot.dataset.otab; render(); return; }
+  const rt = t.closest('[data-rtab]');
+  if(rt){ ui.rtab = rt.dataset.rtab; $$('[data-rtab]').forEach(b => b.setAttribute('aria-selected', String(b===rt))); const g = scene.querySelector('.rgroups'); if(g) g.innerHTML = ribbonGroupsHTML(); return; }
+  const lk = t.closest('[data-lk]'); if(lk){ e.preventDefault(); openLookup(lk.dataset.lk); return; }
+  const op = t.closest('[data-open]');
+  if(op){ e.preventDefault(); if(op.dataset.open==='contact'){ if(isMobile()) ui.mview = 'contacts'; else ui.view = 'contacts'; render(); } else msg('“'+op.textContent+'” would open in its own form.'); return; }
+  const lf = t.closest('[data-lkfocus]');
+  if(lf && V.fa){ ui.fa = lf.dataset.lkfocus; ui.faOpen = true; const fa = scene.querySelector('.fa'); if(fa) fa.outerHTML = faHTML(); return; }
+  const fp = t.closest('[data-fapick]'); if(fp){ setField(ui.fa, fp.dataset.fapick, true); return; }
+  if(t.closest('[data-fatoggle]')){ ui.faOpen = !ui.faOpen; const fa = scene.querySelector('.fa'); if(fa) fa.outerHTML = faHTML(); return; }
+  const j = t.closest('[data-jump]');
+  if(j){
+    if(ui.view!=='info'){ ui.view = 'info'; render(); }
+    $$('[data-jump]').forEach(b => b===j || b.dataset.jump===j.dataset.jump ? b.setAttribute('aria-current','page') : b.removeAttribute('aria-current'));
+    const s = document.getElementById(j.dataset.jump); if(s){ s.classList.remove('shut'); s.scrollIntoView({block:'start'}); }
+    return;
+  }
+  const col = t.closest('[data-collapse]'); if(col){ col.closest('.tsec').classList.toggle('shut'); return; }
+  const az = t.closest('[data-az]'); if(az){ ui.az = az.dataset.az; render(); return; }
+  const rec = t.closest('[data-rec]'); if(rec){ e.preventDefault(); openRecord(rec.closest('tr')); return; }
+  const row = t.closest('tr[data-row]');
+  if(row){
+    const cb = row.querySelector('input');
+    if(t!==cb) cb.checked = !cb.checked;
+    row.classList.toggle('sel', cb.checked); updateCount(row.closest('table')); return;
+  }
+});
+document.addEventListener('change', e => {
+  if(e.target.matches('input[data-all]')){
+    const tbl = e.target.closest('table');
+    tbl.querySelectorAll('tr[data-row]').forEach(r => { r.querySelector('input').checked = e.target.checked; r.classList.toggle('sel', e.target.checked); });
+    updateCount(tbl);
+  }
+});
+function updateCount(tbl){
+  const box = tbl.closest('.gview, .card, .fgv'); const el = box && box.querySelector('[data-count]'); if(!el) return;
+  const total = tbl.querySelectorAll('tr[data-row]').length, sel = tbl.querySelectorAll('tr[data-row] input:checked').length;
+  el.textContent = (V.fam==='uci' || V.fam==='flat') ? 'Rows: '+total+(sel?' ('+sel+' selected)':'') : (total ? '1 - '+total+' of '+total+' ('+sel+' selected)' : '0 - 0 of 0');
+}
+function openRecord(tr){ if(tr) msg('“'+tr.children[1].textContent+'” would open in its own form. Only the account form is part of this recreation.'); }
+document.addEventListener('dblclick', e => { const r = e.target.closest('tr[data-row]'); if(r && !e.target.closest('.veil')) openRecord(r); });
+['input','change'].forEach(ev => document.addEventListener(ev, e => {
+  const el = e.target.closest('[data-f]'); if(!el) return;
+  if(el.type==='radio' && !el.checked) return;
+  S[el.dataset.f] = el.value; S.dirty = true; refreshChrome();
+}));
+document.addEventListener('mouseover', e => {
+  const mb = e.target.closest('[data-menu]'); if(!mb) return;
+  const open = document.querySelector('.menu.open');
+  if(open && open !== mb.parentElement && open.parentElement === mb.parentElement.parentElement) openMenu(mb.parentElement);
+});
+document.addEventListener('keydown', e => {
+  if(e.key==='Escape'){
+    closeMenus();
+    if(!$('#lkVeil').hidden) $('#lkVeil').hidden = true;
+    else if(!$('#msgVeil').hidden){ if($('#msgCancel').hidden) $('#msgOk').click(); else $('#msgCancel').click(); }
+  }
+  if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='s'){ e.preventDefault(); if(ui.win==='open' || isMobile()) save(); }
+  if(e.key==='Enter' && e.target.matches('tr[data-row]')) openRecord(e.target);
+  if(e.key==='Enter' && e.target.matches('tr[data-mopen]')) e.target.click();
+});
+
+/* ---------------- clock + start ---------------- */
+function tick(){ const d = new Date(); $$('.clock').forEach(c => c.textContent = d.getHours()+':'+pad(d.getMinutes())); }
+setInterval(tick, 30000);
+
+const h = location.hash.replace(/^#/,''), start = VERS.find(v => v.tok === h.replace(/-mobile$/,''));
+if(start) V = start;
+if(/-mobile$/.test(h)) MODE = 'mobile';
+resetUi(); renderStrip(); render();
+})();
+</script>
+</body>
+</html>
